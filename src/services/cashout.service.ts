@@ -41,7 +41,7 @@ export async function openCashout(initial_amount: number) {
 
 export async function getActiveCashout() {
   const { data } = await http.get<ApiResponse<ActiveCashout | null>>(
-    "/api/balances"
+    "/balances"
   );
 
   return data;
@@ -56,7 +56,7 @@ export type CloseCashoutPayload = {
 
 export async function closeCashout(payload: CloseCashoutPayload) {
   const { data } = await http.put<ApiResponse<null>>(
-    "/api/balances",
+    "/balances",
     payload
   );
 

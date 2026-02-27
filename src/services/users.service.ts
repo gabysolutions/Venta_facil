@@ -38,7 +38,7 @@ export type UserDetail = User & {
 export type GetUsersResponse = ApiResponse<User[]>;
 
 export async function getAllUsers() {
-  const { data } = await http.get<GetUsersResponse>("/api/users");
+  const { data } = await http.get<GetUsersResponse>("/users");
   return data;
 }
 
@@ -52,7 +52,7 @@ export async function getUsers() {
 export type GetUserByIdResponse = ApiResponse<UserDetail>;
 
 export async function getUserById(id: number) {
-  const { data } = await http.get<GetUserByIdResponse>(`/api/users/${id}`);
+  const { data } = await http.get<GetUserByIdResponse>(`/users/${id}`);
   return data;
 }
 
@@ -71,7 +71,7 @@ export type CreateUserPayload = {
 export type CreateUserResponse = ApiResponse<null>;
 
 export async function createUser(payload: CreateUserPayload) {
-  const { data } = await http.post<CreateUserResponse>("/api/users", payload);
+  const { data } = await http.post<CreateUserResponse>("/users", payload);
   return data;
 }
 
