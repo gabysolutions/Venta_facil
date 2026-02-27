@@ -1,22 +1,23 @@
 import axios from "axios";
 
-// 🔹 Base URL dinámica
-// - En producción usa VITE_API_URL (Railway)
-// - En desarrollo usa /api (lo atiende el proxy de Vite)
-const API_URL = import.meta.env.VITE_API_URL || "";
+const RAW_API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = RAW_API_URL.replace(/\/+$/, ""); 
+const BASE_API = API_URL
+  ? API_URL.endsWith("/api")
+    ? API_URL
+    : `${API_URL}/api`
+  : "/api";
 
 export const http = axios.create({
-  baseURL: API_URL ? `${API_URL}/api` : "/api",
+  baseURL: BASE_API,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// 🔹 Interceptor de request → agrega token si existe
 http.interceptors.request.use((config) => {
   const token =
-    sessionStorage.getItem("vf_token") ||
-    localStorage.getItem("vf_token");
+    sessionStorage.getItem("vf_token") || localStorage.getItem("vf_token");
 
   if (token) {
     config.headers = config.headers ?? {};
@@ -26,7 +27,6 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
-// 🔹 Interceptor de response → maneja 401 global
 http.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -35,7 +35,6 @@ http.interceptors.response.use(
       localStorage.removeItem("vf_token");
       sessionStorage.removeItem("vf_user");
       localStorage.removeItem("vf_user");
-
       window.location.href = "/login";
     }
 
