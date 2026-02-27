@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import type { ActiveCashout } from "../services/openCashOut.service";
+import type { ActiveCashout } from "../services/cashout.service";
 
 function money(n: number) {
   return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(n);

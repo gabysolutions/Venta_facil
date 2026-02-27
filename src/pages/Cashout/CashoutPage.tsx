@@ -16,7 +16,7 @@ import {
   getActiveCashout,
   closeCashout,
   type ActiveCashout,
-} from "../../services/openCashOut.service";
+} from "../../services/cashout.service";
 
 import { downloadCortePdf } from "../../utils/pdfcorte";
 
@@ -307,7 +307,7 @@ export default function CashoutPage() {
             <StatRow
               icon={<AlertTriangle className="h-4 w-4 text-slate-600" />}
               label="Devoluciones"
-              value={`- ${formatCurrency(expected.refund_sales ?? expected.refunds)}`}
+               value={`- ${formatCurrency(expected.refunds)}`}
               danger
             />
           </div>

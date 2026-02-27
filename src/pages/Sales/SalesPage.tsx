@@ -23,7 +23,7 @@ import type { Product as ApiProduct } from "../../services/products.service";
 import { getActiveCategories } from "../../services/category.service";
 import type { Category } from "../../services/category.service";
 
-import { getActiveCashout } from "../../services/openCashout.service";
+import { getActiveCashout } from "../../services/cashout.service";
 
 type PaymentMethod = "cash" | "card" | "transfer";
 

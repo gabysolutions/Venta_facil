@@ -28,8 +28,17 @@ export default function LoginPage() {
     try {
       const res = await loginRequest(username.trim(), password);
 
+      // ✅ TS: res.data puede ser undefined, lo validamos
+      if (!res?.data) {
+        throw new Error("Respuesta inválida del servidor");
+      }
+
       const apiUser = res.data.user; // { id, name, role }
       const token = res.data.token;
+
+      if (!apiUser || !token) {
+        throw new Error("Faltan datos de sesión en la respuesta");
+      }
 
       // 🧠 Mapea el role del backend ("Administrador" | "Cajero")
       const appRole = ROLE_MAP[apiUser.role];

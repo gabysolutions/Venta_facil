@@ -16,6 +16,8 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { toPng } from "html-to-image";
 
+import type React from "react";
+
 import { getSales, getSaleDetails, deleteSale } from "../../services/sales.service";
 import ConfirmModal from "../../components/ui/ConfirmModal";
 import Ticket, { type SaleUI as TicketSaleUI } from "./ticket";
@@ -89,7 +91,7 @@ const ConfirmModalAny = ConfirmModal as unknown as (props: {
   loading?: boolean;
   onClose: () => void;
   onConfirm: () => void;
-}) => JSX.Element;
+}) => React.ReactElement;
 
 export default function ReportPage() {
   const [searchTerm, setSearchTerm] = useState("");

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, LockKeyhole, Wallet, AlertTriangle } from "lucide-react";
-import { openCashout } from "../../services/openCashout.service";
+import { openCashout } from "../../services/cashout.service";
 import Swal from "sweetalert2";
 
 function formatCurrency(value: number) {
