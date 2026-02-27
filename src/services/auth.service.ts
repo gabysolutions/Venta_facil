@@ -18,18 +18,16 @@ export type ApiLoginResponse = {
 
 export async function loginRequest(user: string, password: string) {
   try {
-    const { data } = await http.post<ApiLoginResponse>("/api/auth/login", {
+    const { data } = await http.post<ApiLoginResponse>("/auth/login", {
       user,
       password,
     });
 
-    
     if (!data.success) {
       const msg = data.error || data.message || "Credenciales inválidas";
       throw new Error(msg);
     }
 
- 
     if (!data.data?.token) {
       throw new Error("Respuesta de login inválida ");
     }

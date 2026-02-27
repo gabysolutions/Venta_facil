@@ -61,19 +61,19 @@ export type CreateSalePayload = {
 
 /** GET: listar ventas */
 export async function getSales() {
-  const { data } = await http.get<SalesResponse>("/api/sales");
+  const { data } = await http.get<SalesResponse>("/sales");
   return data;
 }
 
 /** GET: obtener detalle (items) de una venta por id */
 export async function getSaleDetails(id: number | string) {
-  const { data } = await http.get<SaleDetailResponse>(`/api/sales/${id}`);
+  const { data } = await http.get<SaleDetailResponse>(`/sales/${id}`);
   return data;
 }
 
 /** POST: crear venta */
 export async function createSale(payload: CreateSalePayload) {
-  const { data } = await http.post<MessageResponse>("/api/sales", payload);
+  const { data } = await http.post<MessageResponse>("/sales", payload);
   return data;
 }
 
@@ -82,6 +82,6 @@ export async function createSale(payload: CreateSalePayload) {
  *  esto sigue funcionando porque el método es DELETE.
  */
 export async function deleteSale(id: number | string) {
-  const { data } = await http.delete<MessageResponse>(`/api/sales/${id}`);
+  const { data } = await http.delete<MessageResponse>(`/sales/${id}`);
   return data;
 }

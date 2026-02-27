@@ -45,18 +45,18 @@ export type CreateExpensePayload = {
 };
 
 export async function getExpenses() {
-  const { data } = await http.get<ExpensesResponse>("/api/expenses");
+  const { data } = await http.get<ExpensesResponse>("/expenses");
   return data;
 }
 
 
 export async function createExpense(payload: CreateExpensePayload) {
-  const { data } = await http.post<MessageResponse>("/api/expenses", payload);
+  const { data } = await http.post<MessageResponse>("/expenses", payload);
   return data;
 }
 
 
 export async function deleteExpense(id: number | string) {
-  const { data } = await http.delete<MessageResponse>(`/api/expenses/${id}`);
+  const { data } = await http.delete<MessageResponse>(`/expenses/${id}`);
   return data;
 }

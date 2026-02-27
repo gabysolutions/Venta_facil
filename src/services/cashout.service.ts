@@ -31,7 +31,7 @@ export type ActiveCashout = {
 
 
 export async function openCashout(initial_amount: number) {
-  const { data } = await http.post<ApiResponse<null>>("/api/balances", {
+  const { data } = await http.post<ApiResponse<null>>("/balances", {
     initial_amount,
   });
 

@@ -37,16 +37,16 @@ export type BalanceResponse = {
 };
 
 export async function getSalesInfo() {
-  const { data } = await http.get<SalesInfoResponse>("/api/reports/salesInfo");
+  const { data } = await http.get<SalesInfoResponse>("/reports/salesInfo");
   return data;
 }
 
 export async function getProfitInfo() {
-  const { data } = await http.get<ProfitResponse>("/api/reports/profit");
+  const { data } = await http.get<ProfitResponse>("/reports/profit");
   return data;
 }
 
 export async function getActiveBalance() {
-  const { data } = await http.get<BalanceResponse>("/api/balances");
+  const { data } = await http.get<BalanceResponse>("/balances");
   return data;
 }

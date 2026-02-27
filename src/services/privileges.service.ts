@@ -37,7 +37,7 @@ export type ApiResponse<T> = {
 export type GetAllPrivilegesResponse = ApiResponse<Privilege[]>;
 
 export async function getAllPrivileges() {
-  const { data } = await http.get<GetAllPrivilegesResponse>("/api/privileges");
+  const { data } = await http.get<GetAllPrivilegesResponse>("/privileges");
   return data;
 }
 
@@ -50,7 +50,7 @@ export type GetPrivilegesByUserIdData = {
 export type GetPrivilegesByUserIdResponse = ApiResponse<GetPrivilegesByUserIdData>;
 
 export async function getPrivilegesByUserId(userId: number) {
-  const { data } = await http.get<GetPrivilegesByUserIdResponse>(`/api/privileges/${userId}`);
+  const { data } = await http.get<GetPrivilegesByUserIdResponse>(`/privileges/${userId}`);
   return data;
 }
 
@@ -66,7 +66,7 @@ export type AssignPrivilegePayload = {
 export type AssignPrivilegeResponse = ApiResponse<null>;
 
 export async function assignPrivilege(payload: AssignPrivilegePayload) {
-  const { data } = await http.post<AssignPrivilegeResponse>("/api/privileges", payload);
+  const { data } = await http.post<AssignPrivilegeResponse>("/privileges", payload);
   return data;
 }
 
@@ -80,6 +80,6 @@ export type RemovePrivilegeResponse = ApiResponse<null>;
 
 export async function removePrivilege(payload: RemovePrivilegePayload) {
   // Axios delete con body => va en { data: payload }
-  const { data } = await http.delete<RemovePrivilegeResponse>("/api/privileges", { data: payload });
+  const { data } = await http.delete<RemovePrivilegeResponse>("/privileges", { data: payload });
   return data;
 }

@@ -29,7 +29,7 @@ export type MessageResponse = {
 
 /** ====== GET ALL ====== */
 export async function getAllCategories() {
-  const { data } = await http.get<CategoriesResponse>("/api/categories");
+  const { data } = await http.get<CategoriesResponse>("/categories");
   return data;
 }
 
@@ -37,13 +37,13 @@ export async function getAllCategories() {
 export type ActiveCategoriesResponse = CategoriesResponse;
 
 export async function getActiveCategories() {
-  const { data } = await http.get<ActiveCategoriesResponse>("/api/categories/active");
+  const { data } = await http.get<ActiveCategoriesResponse>("/categories/active");
   return data;
 }
 
 /** ====== GET BY ID ====== */
 export async function getCategoryById(id: number | string) {
-  const { data } = await http.get<CategoryResponse>(`/api/categories/${id}`);
+  const { data } = await http.get<CategoryResponse>(`/categories/${id}`);
   return data;
 }
 
@@ -53,7 +53,7 @@ export type CreateCategoryPayload = {
 };
 
 export async function createCategory(payload: CreateCategoryPayload) {
-  const { data } = await http.post<MessageResponse>("/api/categories", payload);
+  const { data } = await http.post<MessageResponse>("/categories", payload);
   return data;
 }
 
@@ -64,18 +64,18 @@ export type UpdateCategoryPayload = {
 };
 
 export async function updateCategory(payload: UpdateCategoryPayload) {
-  const { data } = await http.put<MessageResponse>("/api/categories", payload);
+  const { data } = await http.put<MessageResponse>("/categories", payload);
   return data;
 }
 
 /** ====== ACTIVATE (PATCH) ====== */
 export async function activateCategory(id: number | string) {
-  const { data } = await http.patch<MessageResponse>(`/api/categories/${id}`);
+  const { data } = await http.patch<MessageResponse>(`/categories/${id}`);
   return data;
 }
 
 /** ====== DELETE ====== */
 export async function deleteCategory(id: number | string) {
-  const { data } = await http.delete<MessageResponse>(`/api/categories/${id}`);
+  const { data } = await http.delete<MessageResponse>(`/categories/${id}`);
   return data;
 }

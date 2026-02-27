@@ -91,7 +91,7 @@ export type UpdateUserPayload = {
 export type UpdateUserResponse = ApiResponse<null>;
 
 export async function updateUser(payload: UpdateUserPayload) {
-  const { data } = await http.put<UpdateUserResponse>("/api/users", payload);
+  const { data } = await http.put<UpdateUserResponse>("/users", payload);
   return data;
 }
 
@@ -101,7 +101,7 @@ export async function updateUser(payload: UpdateUserPayload) {
 export type DeleteUserResponse = ApiResponse<null>;
 
 export async function deleteUser(id: number) {
-  const { data } = await http.delete<DeleteUserResponse>(`/api/users/${id}`);
+  const { data } = await http.delete<DeleteUserResponse>(`/users/${id}`);
   return data;
 }
 
@@ -111,6 +111,6 @@ export async function deleteUser(id: number) {
 export type ActivateUserResponse = ApiResponse<null>;
 
 export async function activateUser(id: number) {
-  const { data } = await http.patch<ActivateUserResponse>(`/api/users/${id}`);
+  const { data } = await http.patch<ActivateUserResponse>(`/users/${id}`);
   return data;
 }
