@@ -14,6 +14,7 @@ import {
 
 import { useAuth } from "../../context/AuthContext";
 import type { Permission } from "../../context/AuthContext";
+import snaqui from "../assets/snaqui.jpeg";
 
 type NavItem = {
   label: string;
@@ -100,7 +101,7 @@ export default function Sidebar({
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 overflow-hidden grid place-items-center">
               <img
-                src="public\snaqui.jpeg"
+                src="{snaqui}"
                 
                 className="h-8 w-8 object-contain"
               />
