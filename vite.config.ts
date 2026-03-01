@@ -13,9 +13,31 @@ export default defineConfig({
       modernPolyfills: true,
     }),
   ],
+
   build: {
     target: "es2015",
+
+
+    chunkSizeWarningLimit: 1200,
+
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+
+     
+          if (id.includes("html2canvas") || id.includes("html-to-image")) return "capture";
+
+          
+          if (id.includes("sweetalert2")) return "sweetalert";
+          if (id.includes("lucide-react")) return "icons";
+
+          return "vendor";
+        },
+      },
+    },
   },
+
   server: {
     proxy: {
       "/api": {

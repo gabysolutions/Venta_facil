@@ -14,7 +14,7 @@ import {
   ReceiptText,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { toPng } from "html-to-image";
+
 
 import type React from "react";
 
@@ -273,6 +273,7 @@ export default function ReportPage() {
 
   // ✅ Descargar ticket como PNG
   const downloadTicketPng = async (sale: SaleUI) => {
+    const { toPng } = await import("html-to-image");
     try {
       setTicketLoading(true);
 
