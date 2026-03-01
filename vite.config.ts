@@ -3,23 +3,19 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import legacy from "@vitejs/plugin-legacy";
 
-
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-
     legacy({
       targets: ["defaults", "iOS >= 12", "Safari >= 12"],
       additionalLegacyPolyfills: ["regenerator-runtime/runtime"],
       modernPolyfills: true,
     }),
   ],
-
   build: {
-    target: "es2015", 
+    target: "es2015",
   },
-
   server: {
     proxy: {
       "/api": {
