@@ -59,6 +59,10 @@ function formatCurrency(value: number) {
 }
 
 function formatDateTime(date: Date) {
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
+    return "—";
+  }
+
   return new Intl.DateTimeFormat("es-MX", {
     year: "numeric",
     month: "2-digit",
@@ -124,7 +128,9 @@ export default function ReportPage() {
   const [ticketSale, setTicketSale] = useState<TicketSaleUI | null>(null);
   const [ticketLoading, setTicketLoading] = useState(false);
 
+
   const loadSales = async () => {
+    
     try {
       setLoading(true);
       setError("");
@@ -138,7 +144,7 @@ export default function ReportPage() {
         .filter((s) => Number(s.status) === 1)
         .map((s) => ({
           id: s.id,
-          createdAt: new Date(s.date),
+          createdAt: new Date(String(s.date).replace(" ", "T")),
           cashierName: s.user || "—",
           paymentMethod: mapPayMethod(s.pay_method),
           total: Number(s.total || 0),
