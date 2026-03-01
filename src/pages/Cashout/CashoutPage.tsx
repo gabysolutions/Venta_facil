@@ -5,7 +5,7 @@ import {
   Banknote,
   CreditCard,
   ArrowRight,
-  FileDown,
+  
   Check,
   AlertTriangle,
 } from "lucide-react";
@@ -94,27 +94,7 @@ export default function CashoutPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Exporta el corte activo (sin cerrarlo) si existe
-  const exportActivePdf = () => {
-    setError(null);
 
-    if (!active) {
-      setError("No hay corte activo para exportar.");
-      return;
-    }
-
-    const counted = countedCash.trim() ? countedValue : expectedTotal;
-
-    try {
-      downloadCortePdf({
-        active,
-        countedCash: counted,
-        note: notes.trim(),
-      });
-    } catch (e) {
-      setError("No se pudo generar el PDF.");
-    }
-  };
 
   // ✅ SweetAlert2 Confirm + Success
   const handleConfirmCashout = async () => {
