@@ -458,104 +458,183 @@ export default function ReportPage() {
           </div>
 
           {/* TABLE */}
-          <div className="hidden md:block rounded-2xl border border-slate-200 bg-white overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200">
-                    <th className="text-left p-4 text-sm font-semibold text-slate-700">ID</th>
-                    <th className="text-left p-4 text-sm font-semibold text-slate-700">Fecha y Hora</th>
-                    <th className="text-left p-4 text-sm font-semibold text-slate-700">Cajero</th>
-                    <th className="text-center p-4 text-sm font-semibold text-slate-700">Método</th>
-                    <th className="text-right p-4 text-sm font-semibold text-slate-700">Total</th>
-                    <th className="text-center p-4 text-sm font-semibold text-slate-700">Acciones</th>
-                  </tr>
-                </thead>
+         {/* LISTA (Mobile/iPad) */}
+<div className="lg:hidden space-y-3">
+  {pagedSales.map((sale) => {
+    const PaymentIcon = paymentIcons[sale.paymentMethod];
+    const isDeleting = deletingId === sale.id;
 
-                <tbody>
-                  {pagedSales.map((sale) => {
-                    const PaymentIcon = paymentIcons[sale.paymentMethod];
-                    const isDeleting = deletingId === sale.id;
-
-                    return (
-                      <tr key={sale.id} className="border-b border-slate-100 hover:bg-slate-50/60">
-                        <td className="p-4 font-semibold text-slate-900">
-                          #{String(sale.id).padStart(4, "0")}
-                        </td>
-                        <td className="p-4 text-slate-500">{formatDateTime(sale.createdAt)}</td>
-                        <td className="p-4 text-slate-900">{sale.cashierName}</td>
-                        <td className="p-4">
-                          <div className="flex items-center justify-center gap-2 text-slate-700">
-                            <PaymentIcon className="h-4 w-4 text-slate-500" />
-                            <span className="text-sm">{paymentLabels[sale.paymentMethod]}</span>
-                          </div>
-                        </td>
-                        <td className="p-4 text-right font-bold text-slate-900">
-                          {formatCurrency(sale.total)}
-                        </td>
-
-                        {/* ✅ ACCIONES */}
-                        <td className="p-4">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => openSaleDetail(sale)}
-                              className="h-9 w-9 rounded-lg bg-slate-100 hover:bg-slate-200 grid place-items-center transition"
-                              title="Ver detalle"
-                            >
-                              <Eye className="h-4 w-4 text-slate-700" />
-                            </button>
-
-                            <button
-                              onClick={() => downloadTicketPng(sale)}
-                              disabled={ticketLoading}
-                              className={[
-                                "h-9 w-9 rounded-lg grid place-items-center transition",
-                                ticketLoading
-                                  ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                                  : "bg-slate-900 hover:bg-slate-800 text-white",
-                              ].join(" ")}
-                              title="Descargar ticket (PNG)"
-                            >
-                              {ticketLoading ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <ReceiptText className="h-4 w-4" />
-                              )}
-                            </button>
-
-                            <button
-                              onClick={() => askDeleteSale(sale)}
-                              disabled={isDeleting}
-                              className={[
-                                "h-9 w-9 rounded-lg grid place-items-center transition",
-                                isDeleting
-                                  ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                                  : "bg-rose-500 hover:bg-rose-600 text-white",
-                              ].join(" ")}
-                              title="Eliminar"
-                            >
-                              {isDeleting ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="h-4 w-4" />
-                              )}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {sortedSales.length === 0 && (
-              <div className="p-12 text-center text-slate-500">
-                <ShoppingBag className="h-12 w-12 mx-auto mb-4 opacity-60" />
-                <p className="font-semibold text-slate-700">No hay ventas</p>
-              </div>
-            )}
+    return (
+      <div
+        key={sale.id}
+        className="rounded-2xl border border-slate-200 bg-white p-4"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-bold text-slate-900">
+              Venta #{String(sale.id).padStart(4, "0")}
+            </p>
+            <p className="text-sm text-slate-500">{formatDateTime(sale.createdAt)}</p>
+            <p className="text-sm text-slate-700 truncate">{sale.cashierName}</p>
           </div>
+
+          <div className="text-right shrink-0">
+            <p className="font-bold text-slate-900">{formatCurrency(sale.total)}</p>
+            <div className="mt-1 inline-flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-1 text-sm text-slate-700">
+              <PaymentIcon className="h-4 w-4 text-slate-500" />
+              <span>{paymentLabels[sale.paymentMethod]}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Acciones táctiles */}
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <button
+            onClick={() => openSaleDetail(sale)}
+            className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 inline-flex items-center justify-center gap-2"
+          >
+            <Eye className="h-4 w-4" />
+            Ver
+          </button>
+
+          <button
+            onClick={() => downloadTicketPng(sale)}
+            disabled={ticketLoading}
+            className={[
+              "rounded-xl px-3 py-2 text-sm font-semibold inline-flex items-center justify-center gap-2",
+              ticketLoading
+                ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                : "bg-slate-900 hover:bg-slate-800 text-white",
+            ].join(" ")}
+          >
+            {ticketLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ReceiptText className="h-4 w-4" />}
+            Ticket
+          </button>
+
+          <button
+            onClick={() => askDeleteSale(sale)}
+            disabled={isDeleting}
+            className={[
+              "rounded-xl px-3 py-2 text-sm font-semibold inline-flex items-center justify-center gap-2",
+              isDeleting
+                ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                : "bg-rose-500 hover:bg-rose-600 text-white",
+            ].join(" ")}
+          >
+            {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            Eliminar
+          </button>
+        </div>
+      </div>
+    );
+  })}
+
+  {sortedSales.length === 0 && (
+    <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-500">
+      <ShoppingBag className="h-12 w-12 mx-auto mb-4 opacity-60" />
+      <p className="font-semibold text-slate-700">No hay ventas</p>
+    </div>
+  )}
+</div>
+
+{/* TABLE (Desktop) */}
+<div className="hidden lg:block rounded-2xl border border-slate-200 bg-white overflow-hidden">
+  <div className="overflow-x-auto">
+    <table className="w-full min-w-[900px]">
+      <thead>
+        <tr className="bg-slate-50 border-b border-slate-200">
+          <th className="text-left p-4 text-sm font-semibold text-slate-700">ID</th>
+          <th className="text-left p-4 text-sm font-semibold text-slate-700">Fecha y Hora</th>
+          <th className="text-left p-4 text-sm font-semibold text-slate-700">Cajero</th>
+          <th className="text-center p-4 text-sm font-semibold text-slate-700">Método</th>
+          <th className="text-right p-4 text-sm font-semibold text-slate-700">Total</th>
+          <th className="text-center p-4 text-sm font-semibold text-slate-700">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {pagedSales.map((sale) => {
+          const PaymentIcon = paymentIcons[sale.paymentMethod];
+          const isDeleting = deletingId === sale.id;
+
+          return (
+            <tr key={sale.id} className="border-b border-slate-100 hover:bg-slate-50/60">
+              <td className="p-4 font-semibold text-slate-900">
+                #{String(sale.id).padStart(4, "0")}
+              </td>
+              <td className="p-4 text-slate-500">{formatDateTime(sale.createdAt)}</td>
+              <td className="p-4 text-slate-900">{sale.cashierName}</td>
+              <td className="p-4">
+                <div className="flex items-center justify-center gap-2 text-slate-700">
+                  <PaymentIcon className="h-4 w-4 text-slate-500" />
+                  <span className="text-sm">{paymentLabels[sale.paymentMethod]}</span>
+                </div>
+              </td>
+              <td className="p-4 text-right font-bold text-slate-900">
+                {formatCurrency(sale.total)}
+              </td>
+
+              <td className="p-4">
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => openSaleDetail(sale)}
+                    className="h-9 w-9 rounded-lg bg-slate-100 hover:bg-slate-200 grid place-items-center transition"
+                    title="Ver detalle"
+                  >
+                    <Eye className="h-4 w-4 text-slate-700" />
+                  </button>
+
+                  <button
+                    onClick={() => downloadTicketPng(sale)}
+                    disabled={ticketLoading}
+                    className={[
+                      "h-9 w-9 rounded-lg grid place-items-center transition",
+                      ticketLoading
+                        ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                        : "bg-slate-900 hover:bg-slate-800 text-white",
+                    ].join(" ")}
+                    title="Descargar ticket (PNG)"
+                  >
+                    {ticketLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ReceiptText className="h-4 w-4" />
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => askDeleteSale(sale)}
+                    disabled={isDeleting}
+                    className={[
+                      "h-9 w-9 rounded-lg grid place-items-center transition",
+                      isDeleting
+                        ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                        : "bg-rose-500 hover:bg-rose-600 text-white",
+                    ].join(" ")}
+                    title="Eliminar"
+                  >
+                    {isDeleting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+
+  {sortedSales.length === 0 && (
+    <div className="p-12 text-center text-slate-500">
+      <ShoppingBag className="h-12 w-12 mx-auto mb-4 opacity-60" />
+      <p className="font-semibold text-slate-700">No hay ventas</p>
+    </div>
+  )}
+</div>
 
           {/* PAGINACIÓN */}
           {sortedSales.length > PAGE_SIZE && (

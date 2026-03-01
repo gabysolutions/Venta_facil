@@ -301,34 +301,39 @@ export default function ProductsPage() {
   return (
     <div className="p-4 lg:p-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-slate-900">Productos</h1>
-          <p className="text-slate-500 mt-1">{products.length} productos en el catálogo</p>
-        </div>
+      <div className="sticky top-0 z-30 -mx-4 px-4 pt-4 pb-3 bg-slate-50/95 backdrop-blur border-b border-slate-200 lg:static lg:mx-0 lg:px-0 lg:pt-0 lg:pb-0 lg:bg-transparent lg:border-0 mb-4 lg:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 truncate">
+                Productos
+              </h1>
+              <p className="text-sm text-slate-500 mt-0.5">
+                {products.length} productos en el catálogo
+              </p>
+            </div>
 
-        {/* ✅ NUEVO: botón categorías (no toca tus modales de producto) */}
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <button
-            onClick={() => setShowCategories(true)}
-            className="inline-flex items-center justify-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold px-4 py-2.5 transition w-full sm:w-auto"
-            title="Administrar categorías"
-          >
-            <Tags className="h-5 w-5 mr-2" />
-            Categorías
-          </button>
+            <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:gap-3">
+              <button
+                onClick={() => setShowCategories(true)}
+                className="inline-flex items-center justify-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold px-4 py-2.5 transition"
+                title="Administrar categorías"
+              >
+                <Tags className="h-5 w-5 mr-2" />
+                Categorías
+              </button>
 
-          <button
-            onClick={openNew}
-            disabled={noCategories}
-            className="inline-flex items-center justify-center rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold px-4 py-2.5 transition w-full sm:w-auto"
-            title={noCategories ? "Primero crea categorías" : "Crear producto"}
-          >
-            <Plus className="h-5 w-5 mr-2 text-white" />
-            Nuevo producto
-          </button>
+              <button
+                onClick={openNew}
+                disabled={noCategories}
+                className="inline-flex items-center justify-center rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold px-4 py-2.5 transition"
+                title={noCategories ? "Primero crea categorías" : "Crear producto"}
+              >
+                <Plus className="h-5 w-5 mr-2 text-white" />
+                Nuevo
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
 
       {/* Error banner */}
       {error && (
