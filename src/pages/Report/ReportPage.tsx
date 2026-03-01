@@ -69,6 +69,7 @@ function formatDateTime(date: Date) {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   }).format(date);
 }
 
@@ -144,7 +145,7 @@ export default function ReportPage() {
         .filter((s) => Number(s.status) === 1)
         .map((s) => ({
           id: s.id,
-          createdAt: new Date(String(s.date).replace(" ", "T")),
+          createdAt: new Date(String(s.date).replace(" ", "T") + "Z"),
           cashierName: s.user || "—",
           paymentMethod: mapPayMethod(s.pay_method),
           total: Number(s.total || 0),
