@@ -6,8 +6,9 @@ import legacy from "@vitejs/plugin-legacy";
 export default defineConfig({
   plugins: [
     react(),
-    tailwindcss(),
+    tailwindcss(), 
     legacy({
+      
       targets: ["defaults", "iOS >= 12", "Safari >= 12"],
       additionalLegacyPolyfills: ["regenerator-runtime/runtime"],
       modernPolyfills: true,
@@ -15,9 +16,9 @@ export default defineConfig({
   ],
 
   build: {
-    target: "es2015",
-
-
+    
+    target: ["es2015", "safari13"],
+    cssTarget: "safari13", 
     chunkSizeWarningLimit: 1200,
 
     rollupOptions: {
@@ -25,9 +26,10 @@ export default defineConfig({
         manualChunks(id) {
           if (!id.includes("node_modules")) return;
 
-     
-          if (id.includes("html2canvas") || id.includes("html-to-image")) return "capture";
-
+        
+          if (id.includes("html2canvas") || id.includes("html-to-image") || id.includes("jspdf")) {
+            return "capture";
+          }
           
           if (id.includes("sweetalert2")) return "sweetalert";
           if (id.includes("lucide-react")) return "icons";
@@ -36,6 +38,16 @@ export default defineConfig({
         },
       },
     },
+  },
+
+  
+  css: {
+    devSourcemap: true,
+    preprocessorOptions: {
+      scss: {
+        api: 'modern-compiler'
+      }
+    }
   },
 
   server: {
