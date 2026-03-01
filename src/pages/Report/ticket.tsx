@@ -1,4 +1,3 @@
-// src/pages/Report/ticket.tsx
 type PaymentMethod = "cash" | "card" | "transfer";
 
 type SaleItem = {
@@ -30,12 +29,14 @@ function formatCurrency(value: number) {
 }
 
 function formatDateTime(date: Date) {
+  if (!(date instanceof Date) || isNaN(date.getTime())) return "—";
   return new Intl.DateTimeFormat("es-MX", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   }).format(date);
 }
 
@@ -43,18 +44,36 @@ export default function Ticket({ sale }: { sale: SaleUI }) {
   const items = sale.items || [];
 
   return (
-    <div style={{  fontFamily: "Arial, sans-serif",
+    <div
+      style={{
+        width: 280,
+        fontFamily: "Arial, sans-serif",
         fontSize: 12,
         background: "#fff",
         color: "#111",
-        padding: 12}}>
-      <div style={{ textAlign: "center" }}>
-        <div style={{ fontWeight: 800, fontSize: 16 }}>VENTA FÁCIL</div>
-        <div style={{ color: "#666" }}>Ticket de venta</div>
+        padding: 12,
+        lineHeight: 1.4,
+      }}
+    >
+      {/* HEADER */}
+      <div style={{ textAlign: "center", marginBottom: 6 }}>
+        <div style={{ fontWeight: 900, fontSize: 16, letterSpacing: 0.5 }}>SNAQUII</div>
+        <div style={{ color: "#666", fontSize: 11, marginTop: 2 }}>Healthy Bites</div>
+
+        <div style={{ color: "#666", fontSize: 10, marginTop: 6 }}>
+          Dirección: Juan Silveti 101, El Toreo
+          <br />
+          82120 Mazatlán, Sin.
+        </div>
+
+        <div style={{ color: "#666", fontSize: 10, marginTop: 2 }}>
+          Contacto: 667 898 7730
+        </div>
       </div>
 
-      <div style={{ borderTop: "1px dashed #999", margin: "10px 0" }} />
+      <div style={{ borderTop: "1px dashed #999", margin: "8px 0" }} />
 
+      {/* INFO */}
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <span>ID</span>
         <span style={{ fontWeight: 700 }}>#{String(sale.id).padStart(4, "0")}</span>
@@ -75,15 +94,16 @@ export default function Ticket({ sale }: { sale: SaleUI }) {
         <span>{paymentLabels[sale.paymentMethod]}</span>
       </div>
 
-      <div style={{ borderTop: "1px dashed #999", margin: "10px 0" }} />
+      <div style={{ borderTop: "1px dashed #999", margin: "8px 0" }} />
 
-      <div style={{ fontWeight: 700, marginBottom: 6 }}>Productos</div>
+      {/* PRODUCTOS */}
+      <div style={{ fontWeight: 700, marginBottom: 4 }}>Productos</div>
 
       {items.length ? (
         <div>
           {items.map((it, idx) => (
-            <div key={idx} style={{ marginBottom: 8 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+            <div key={idx} style={{ marginBottom: 6 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 6 }}>
                 <div
                   style={{
                     flex: 1,
@@ -96,7 +116,8 @@ export default function Ticket({ sale }: { sale: SaleUI }) {
                 </div>
                 <div style={{ fontWeight: 700 }}>{formatCurrency(it.subtotal)}</div>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", color: "#666", fontSize: 11 }}>
+
+              <div style={{ display: "flex", justifyContent: "space-between", color: "#666", fontSize: 10 }}>
                 <span>{formatCurrency(it.price)} c/u</span>
                 <span />
               </div>
@@ -107,9 +128,10 @@ export default function Ticket({ sale }: { sale: SaleUI }) {
         <div style={{ color: "#666" }}>Sin detalle</div>
       )}
 
-      <div style={{ borderTop: "1px dashed #999", margin: "10px 0" }} />
+      <div style={{ borderTop: "1px dashed #999", margin: "8px 0" }} />
 
-      <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 800, fontSize: 14 }}>
+      {/* TOTAL */}
+      <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 900, fontSize: 14 }}>
         <span>TOTAL</span>
         <span>{formatCurrency(sale.total)}</span>
       </div>
@@ -127,8 +149,14 @@ export default function Ticket({ sale }: { sale: SaleUI }) {
         </>
       )}
 
-      <div style={{ borderTop: "1px dashed #999", margin: "10px 0" }} />
-      <div style={{ textAlign: "center", color: "#666" }}>Gracias por su compra ✨</div>
+      <div style={{ borderTop: "1px dashed #999", margin: "8px 0" }} />
+
+      {/* FOOTER */}
+      <div style={{ textAlign: "center", color: "#666", fontSize: 10 }}>
+        Gracias por su compra ✨
+        <br />
+        Conserve su ticket
+      </div>
     </div>
   );
 }
