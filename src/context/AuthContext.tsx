@@ -15,6 +15,7 @@ export type User = {
 type AuthState = {
   user: User | null;
   token: string | null;
+  ready: boolean; 
   isAuthenticated: boolean;
   login: (payload: { user: User; token?: string; remember?: boolean }) => void;
   logout: () => void;
@@ -60,6 +61,8 @@ function readAuthFromStorage() {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
+
 
   const getToken = () => token || sessionStorage.getItem(LS_TOKEN) || localStorage.getItem(LS_TOKEN);
 
@@ -87,22 +90,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     persistUser(nextUser);
   };
 
-  useEffect(() => {
-    const { rawUser, rawToken } = readAuthFromStorage();
+ useEffect(() => {
+  const { rawUser, rawToken } = readAuthFromStorage();
 
-    if (rawUser) {
-      try {
-        setUser(JSON.parse(rawUser));
-      } catch {
-        clearAuthStorage();
-        setUser(null);
-        setToken(null);
-        return;
-      }
+  if (rawUser) {
+    try {
+      setUser(JSON.parse(rawUser));
+    } catch {
+      clearAuthStorage();
+      setUser(null);
+      setToken(null);
+      setReady(true); 
+      return;
     }
+  }
 
-    if (rawToken) setToken(rawToken);
-  }, []);
+  if (rawToken) setToken(rawToken);
+
+  setReady(true);
+}, []);
 
   // cuando haya token+user, trae permisos reales
   useEffect(() => {
@@ -123,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     storage.setItem(LS_USER, JSON.stringify(incomingUser));
     if (incomingToken) storage.setItem(LS_TOKEN, incomingToken);
 
-    // después del login, trae permisos reales (con userId)
+
     if (incomingToken) {
       (async () => {
         try {
@@ -158,6 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => ({
       user,
       token,
+      ready,
       isAuthenticated: !!user && !!getToken(),
       login,
       logout,

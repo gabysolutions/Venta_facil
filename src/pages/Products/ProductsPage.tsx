@@ -337,38 +337,53 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Search + Filters */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 mb-6">
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-            <input
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por nombre, categoría o ID..."
-              className="w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 py-3 outline-none focus:border-emerald-400"
-            />
-          </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {categoriesWithAll.map((c) => {
-              const active = selectedCategory === c.description;
-              return (
-                <button
-                  key={c.id}
-                  onClick={() => setSelectedCategory(c.description)}
-                  className={[
-                    "px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition",
-                    active ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200",
-                  ].join(" ")}
-                >
-                  {c.description}
-                </button>
-              );
-            })}
+      {/* Search + Filters */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 mb-6">
+          {/* ✅ iPad: buscador arriba, categorías abajo (wrap). Desktop: en fila */}
+          <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar por nombre, categoría o ID..."
+                className="w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 py-3 outline-none focus:border-emerald-400"
+              />
+            </div>
+
+            {/* Categories */}
+            <div
+              className={[
+                // ✅ Mobile: scroll horizontal
+                "flex gap-2 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]",
+                // ✅ iPad/tablet: que hagan wrap y no scroll
+                "md:flex-wrap md:overflow-visible md:pb-0",
+                // ✅ Desktop: mantenerlo alineado en fila
+                "lg:flex-nowrap lg:overflow-x-auto lg:pb-1",
+              ].join(" ")}
+            >
+              {categoriesWithAll.map((c) => {
+                const active = selectedCategory === c.description;
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => setSelectedCategory(c.description)}
+                    className={[
+                      "px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition flex-shrink-0",
+                      // ✅ en iPad al envolver, deja que se encojan menos feo
+                      "md:flex-shrink",
+                      active ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200",
+                    ].join(" ")}
+                  >
+                    {c.description}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
 
       {/* ✅ DESKTOP TABLE */}
       <div className="hidden lg:block rounded-2xl border border-slate-200 bg-white overflow-hidden">

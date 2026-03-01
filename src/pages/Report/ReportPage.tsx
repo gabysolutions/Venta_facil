@@ -166,14 +166,20 @@ export default function ReportPage() {
     });
   }, [sales, searchTerm, filterPayment]);
 
+  // ✅ ORDEN: más nueva -> más vieja (ID DESC)
+  const sortedSales = useMemo(() => {
+    return [...filteredSales].sort((a, b) => Number(b.id) - Number(a.id));
+  }, [filteredSales]);
+
+  // reset page al cambiar filtros/busqueda
   useEffect(() => setPage(1), [searchTerm, filterPayment]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredSales.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(sortedSales.length / PAGE_SIZE));
 
   const pagedSales = useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
-    return filteredSales.slice(start, start + PAGE_SIZE);
-  }, [filteredSales, page]);
+    return sortedSales.slice(start, start + PAGE_SIZE);
+  }, [sortedSales, page]);
 
   const stats = useMemo(() => {
     const total = filteredSales.reduce((sum, s) => sum + s.total, 0);
@@ -184,7 +190,8 @@ export default function ReportPage() {
 
   const exportCsv = () => {
     const header = ["id", "fecha", "cajero", "metodo", "total"];
-    const rows = filteredSales.map((s) => [
+    // si quieres exportar también en orden DESC, cambia filteredSales por sortedSales
+    const rows = sortedSales.map((s) => [
       s.id,
       s.createdAt.toISOString(),
       `"${(s.cashierName || "").replaceAll('"', '""')}"`,
@@ -264,7 +271,7 @@ export default function ReportPage() {
     setSaleToDelete(null);
   };
 
-  // ✅ Descargar ticket como PNG (sin abrir otro modal)
+  // ✅ Descargar ticket como PNG
   const downloadTicketPng = async (sale: SaleUI) => {
     try {
       setTicketLoading(true);
@@ -304,7 +311,7 @@ export default function ReportPage() {
 
       const dataUrl = await toPng(ticketRef.current, {
         cacheBust: true,
-        pixelRatio: 2, // se ve más nítido
+        pixelRatio: 2,
       });
 
       const a = document.createElement("a");
@@ -312,12 +319,9 @@ export default function ReportPage() {
       a.download = `ticket_${String(sale.id).padStart(4, "0")}.png`;
       a.click();
     } catch (e) {
-      // aquí podrías usar tu Swal si quieres
       alert(getErrorMessage(e, "No se pudo descargar el ticket"));
     } finally {
       setTicketLoading(false);
-      // opcional: limpiar
-      // setTicketSale(null);
     }
   };
 
@@ -454,7 +458,7 @@ export default function ReportPage() {
           </div>
 
           {/* TABLE */}
-          <div className="hidden lg:block rounded-2xl border border-slate-200 bg-white overflow-hidden">
+          <div className="hidden md:block rounded-2xl border border-slate-200 bg-white overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -545,7 +549,7 @@ export default function ReportPage() {
               </table>
             </div>
 
-            {filteredSales.length === 0 && (
+            {sortedSales.length === 0 && (
               <div className="p-12 text-center text-slate-500">
                 <ShoppingBag className="h-12 w-12 mx-auto mb-4 opacity-60" />
                 <p className="font-semibold text-slate-700">No hay ventas</p>
@@ -553,8 +557,8 @@ export default function ReportPage() {
             )}
           </div>
 
-          {/* PAGINACIÓN (para que totalPages no quede “unused”) */}
-          {filteredSales.length > PAGE_SIZE && (
+          {/* PAGINACIÓN */}
+          {sortedSales.length > PAGE_SIZE && (
             <div className="mt-6 flex items-center justify-between gap-3">
               <p className="text-sm text-slate-500">
                 Página <span className="font-semibold text-slate-700">{page}</span> /{" "}
@@ -591,7 +595,7 @@ export default function ReportPage() {
             </div>
           )}
 
-          {/* MODAL Detalle (solo uno, sin abrir “otro modal feo”) */}
+          {/* MODAL Detalle */}
           {selectedSale && (
             <div className="fixed inset-0 z-40">
               <div className="absolute inset-0 bg-black/50" onClick={() => setSelectedSale(null)} />
@@ -693,8 +697,6 @@ export default function ReportPage() {
                         </div>
                       </div>
                     )}
-
-                    
                   </div>
                 </div>
               </div>

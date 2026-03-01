@@ -388,9 +388,7 @@ export default function EgresosPage() {
               <p className="font-extrabold text-slate-900">Registrar egreso</p>
               <p className="text-sm text-slate-500">Se reflejará en tu corte.</p>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-emerald-100 grid place-items-center">
-              <Plus className="h-5 w-5 text-emerald-700" />
-            </div>
+           
           </div>
 
           <form onSubmit={submit} className="p-4 space-y-4">

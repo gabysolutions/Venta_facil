@@ -177,9 +177,10 @@ export default function InventoryPage() {
       </div>
 
       {/* Filters */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 mb-6">
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="relative flex-1">
+      
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 mb-6">
+          {/* Row 1: Search */}
+          <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
             <input
               type="text"
@@ -190,7 +191,8 @@ export default function InventoryPage() {
             />
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          {/* Row 2: Status chips (wrap) */}
+          <div className="mt-4 flex flex-wrap gap-2">
             <button
               onClick={() => setFilterStatus("all")}
               className={[
@@ -228,32 +230,33 @@ export default function InventoryPage() {
               Stock OK
             </button>
           </div>
-        </div>
 
-        {/* Categories */}
-        <div className="flex gap-2 overflow-x-auto mt-4 pb-1">
-          {categoryButtons.map((c) => {
-            const active = selectedCategory === c.description;
-            return (
-              <button
-                key={c.id}
-                onClick={() => setSelectedCategory(c.description)}
-                className={[
-                  "px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition",
-                  active
-                    ? "bg-slate-900 text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200",
-                ].join(" ")}
-              >
-                {c.description}
-              </button>
-            );
-          })}
+          {/* Row 3: Categories chips (wrap + límite de alto con scroll suave si son demasiadas) */}
+          <div className="mt-4">
+            <div className="flex flex-wrap gap-2 max-h-28 overflow-auto pr-1">
+              {categoryButtons.map((c) => {
+                const active = selectedCategory === c.description;
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => setSelectedCategory(c.description)}
+                    className={[
+                      "px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition",
+                      active
+                        ? "bg-slate-900 text-white"
+                        : "bg-slate-100 text-slate-700 hover:bg-slate-200",
+                    ].join(" ")}
+                  >
+                    {c.description}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
-      </div>
 
       {/* Inventory Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredProducts.map((p) => {
           const stockPercentage = (p.stock / (p.min_stock * 3)) * 100;
           const isLow = p.stock <= p.min_stock;

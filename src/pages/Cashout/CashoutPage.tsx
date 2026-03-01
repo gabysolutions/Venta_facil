@@ -205,13 +205,7 @@ export default function CashoutPage() {
           </p>
         </div>
 
-        <button
-          onClick={exportActivePdf}
-          className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold px-4 py-2.5 transition w-full sm:w-auto"
-        >
-          <FileDown className="h-5 w-5 mr-2" />
-          Exportar
-        </button>
+       
       </div>
 
       {/* Error banner */}

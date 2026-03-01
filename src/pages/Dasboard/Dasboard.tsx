@@ -140,23 +140,25 @@ export default function Dashboard() {
       )}
 
       {/* Quick Action */}
-      <Link
-        to="/ventas"
-        className="mb-6 lg:mb-8 block rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-500 to-emerald-400 text-white shadow-xl hover:opacity-95 transition"
-      >
-        <div className="p-4 lg:p-5 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 min-w-0">
-            <div className="h-12 w-12 rounded-xl bg-white/20 grid place-items-center flex-shrink-0">
-              <ShoppingCart className="h-6 w-6" />
+    <Link
+            to="/ventas"
+            className="mb-6 lg:mb-8 block rounded-2xl border border-emerald-300 bg-emerald-500 text-white shadow-xl hover:bg-emerald-400 active:scale-[0.98] transition"
+          >
+            <div className="p-4 lg:p-5 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="h-12 w-12 rounded-xl bg-white/20 grid place-items-center flex-shrink-0">
+                  <ShoppingCart className="h-6 w-6" />
+                </div>
+
+                <div className="min-w-0">
+                  <p className="font-extrabold text-lg truncate">Nueva Venta</p>
+                  <p className="text-sm text-white/90 truncate">Ir al punto de venta</p>
+                </div>
+              </div>
+
+              <ArrowRight className="h-6 w-6 flex-shrink-0" />
             </div>
-            <div className="min-w-0">
-              <p className="font-extrabold text-lg truncate">Nueva Venta</p>
-              <p className="text-sm text-white/85 truncate">Ir al punto de venta</p>
-            </div>
-          </div>
-          <ArrowRight className="h-6 w-6 flex-shrink-0" />
-        </div>
-      </Link>
+          </Link>
 
       {/* Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 lg:mb-8">

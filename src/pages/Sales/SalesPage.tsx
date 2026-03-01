@@ -34,7 +34,7 @@ type ProductUI = {
   categoryId: number;
   price: number;
   cost: number;
-  stock: number;
+  stock: number;     
   minStock: number;
   isActive: boolean;
 };
@@ -148,7 +148,7 @@ function CartPanel({
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm text-slate-900 truncate">{item.product.name}</p>
                     <p className="text-sm text-slate-500">{formatCurrency(item.product.price)} c/u</p>
-                    <p className="text-xs text-slate-400">Stock: {item.product.stock}</p>
+                  
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -382,6 +382,18 @@ export default function SalesPage() {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string>("");
 
+
+  const [isTablet, setIsTablet] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px) and (max-width: 1023px)");
+    const apply = () => setIsTablet(mq.matches);
+    apply();
+    mq.addEventListener?.("change", apply);
+    return () => mq.removeEventListener?.("change", apply);
+  }, []);
+
+
   // ====== LOAD DATA (VALIDA CORTE + CARGA CATÁLOGO) ======
   useEffect(() => {
     let mounted = true;
@@ -405,7 +417,7 @@ export default function SalesPage() {
         if (!prodRes.success) throw new Error(prodRes.error || prodRes.message || "No se pudieron cargar productos");
 
         const cats = (catRes.data || []).filter((c) => Number(c.status) === 1);
-        const prods = (prodRes.data || []).filter((p) => Number(p.status) === 1 && Number(p.stock) > 0);
+        const prods = (prodRes.data || []).filter((p) => Number(p.status) === 1 );
 
         const mappedProducts: ProductUI[] = prods.map((p: ApiProduct) => ({
           id: Number(p.id),
@@ -414,8 +426,8 @@ export default function SalesPage() {
           categoryId: Number(p.category_id),
           price: Number(p.price || 0),
           cost: Number(p.cost || 0),
-          stock: Number(p.stock || 0),
-          minStock: Number(p.min_stock || 0),
+          stock: Number((p as any).stock || 0),
+          minStock: Number((p as any).min_stock || 0),
           isActive: Number(p.status) === 1,
         }));
 
@@ -443,7 +455,7 @@ export default function SalesPage() {
     return products.filter((p) => {
       const matchesSearch = p.name.toLowerCase().includes(term);
       const matchesCategory = selectedCategoryId === "all" ? true : p.categoryId === selectedCategoryId;
-      return matchesSearch && matchesCategory && p.isActive && p.stock > 0;
+      return matchesSearch && matchesCategory && p.isActive ;
     });
   }, [products, searchTerm, selectedCategoryId]);
 
@@ -458,39 +470,35 @@ export default function SalesPage() {
 
   // ====== CART ACTIONS ======
   const addToCart = (product: ProductUI) => {
-    setCart((prev) => {
-      const found = prev.find((i) => i.product.id === product.id);
+  setCart((prev) => {
+    const found = prev.find((i) => i.product.id === product.id);
 
-      const alreadyQty = found?.quantity ?? 0;
-      if (alreadyQty + 1 > product.stock) return prev;
+    if (found) {
+      return prev.map((i) =>
+        i.product.id === product.id
+          ? { ...i, quantity: i.quantity + 1, subtotal: (i.quantity + 1) * i.product.price }
+          : i
+      );
+    }
 
-      if (found) {
-        return prev.map((i) =>
-          i.product.id === product.id
-            ? { ...i, quantity: i.quantity + 1, subtotal: (i.quantity + 1) * i.product.price }
-            : i
-        );
-      }
-      return [...prev, { product, quantity: 1, subtotal: product.price }];
-    });
-  };
+    return [...prev, { product, quantity: 1, subtotal: product.price }];
+  });
+};
 
   const updateQuantity = (productId: number, delta: number) => {
-    setCart((prev) =>
-      prev
-        .map((i) => {
-          if (i.product.id !== productId) return i;
+  setCart((prev) =>
+    prev
+      .map((i) => {
+        if (i.product.id !== productId) return i;
 
-          const nextQty = i.quantity + delta;
-          if (nextQty <= 0) return null;
+        const nextQty = i.quantity + delta;
+        if (nextQty <= 0) return null;
 
-          if (nextQty > i.product.stock) return i;
-
-          return { ...i, quantity: nextQty, subtotal: nextQty * i.product.price };
-        })
-        .filter(Boolean) as CartItem[]
-    );
-  };
+        return { ...i, quantity: nextQty, subtotal: nextQty * i.product.price };
+      })
+      .filter(Boolean) as CartItem[]
+  );
+};
 
   const removeFromCart = (productId: number) => {
     setCart((prev) => prev.filter((i) => i.product.id !== productId));
@@ -543,7 +551,7 @@ export default function SalesPage() {
 
       Swal.fire({
         title: "Guardando venta...",
-        text: "No cierres esta ventana 😅",
+       
         allowOutsideClick: false,
         allowEscapeKey: false,
         didOpen: () => Swal.showLoading(),
@@ -554,7 +562,7 @@ export default function SalesPage() {
 
       const prodRes = await getActiveProducts();
       if (prodRes.success) {
-        const prods = (prodRes.data || []).filter((p) => Number(p.status) === 1 && Number(p.stock) > 0);
+        const prods = (prodRes.data || []).filter((p) => Number(p.status) === 1 );
         const mappedProducts: ProductUI[] = prods.map((p: ApiProduct) => ({
           id: Number(p.id),
           name: p.description,
@@ -631,52 +639,59 @@ export default function SalesPage() {
   return (
     <div className="h-[calc(100vh-0px)] flex flex-col lg:flex-row">
       <div className="flex-1 flex flex-col min-h-0 lg:border-r lg:border-slate-200">
-        <div className="p-4 bg-white border-b border-slate-200">
-          <div className="relative mb-4">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Buscar producto..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-white pl-12 pr-4 py-3 outline-none focus:border-emerald-400"
-              autoFocus
-            />
-          </div>
+      {/* TOP BAR (buscador + categorías) */}
+            <div className="sticky top-0 z-20 bg-white border-b border-slate-200">
+              <div className="px-3 pt-3 pb-2 md:px-4">
+                {/* Buscador */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Buscar producto..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-3 py-2.5 text-sm outline-none focus:border-emerald-400"
+                    autoFocus
+                  />
+                </div>
 
-          <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:overflow-x-auto sm:pb-1">
-            <button
-              onClick={() => setSelectedCategoryId("all")}
-              className={[
-                "px-3 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition flex-shrink-0",
-                selectedCategoryId === "all"
-                  ? "bg-emerald-500 text-white"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200",
-              ].join(" ")}
-            >
-              Todos
-            </button>
+                {/* Categorías */}
+                <div className="mt-3">
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setSelectedCategoryId("all")}
+                      className={[
+                        "px-3 py-2 rounded-xl text-sm font-semibold transition",
+                        selectedCategoryId === "all"
+                          ? "bg-emerald-500 text-white"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200",
+                      ].join(" ")}
+                    >
+                      Todos
+                    </button>
 
-            {categories.map((c) => {
-              const active = selectedCategoryId === c.id;
-              return (
-                <button
-                  key={c.id}
-                  onClick={() => setSelectedCategoryId(c.id)}
-                  className={[
-                    "px-3 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition flex-shrink-0",
-                    active ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200",
-                  ].join(" ")}
-                >
-                  {c.description}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+                    {categories.map((c) => {
+                      const active = selectedCategoryId === c.id;
+                      return (
+                        <button
+                          key={c.id}
+                          onClick={() => setSelectedCategoryId(c.id)}
+                          className={[
+                            "px-3 py-2 rounded-xl text-sm font-semibold transition",
+                            active ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200",
+                          ].join(" ")}
+                        >
+                          {c.description}
+                        </button>
+                      );
+                    })}
+                  </div>
+</div>
+              </div>
+            </div>
 
-        <div className="flex-1 overflow-auto p-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        <div className="flex-1 overflow-auto p-3 md:p-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {filteredProducts.map((p) => {
               const low = p.stock <= p.minStock;
               return (
@@ -685,7 +700,7 @@ export default function SalesPage() {
                   onClick={() => addToCart(p)}
                   className="rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 transition p-3 text-left"
                 >
-                  <div className="w-full aspect-square rounded-xl bg-slate-100 grid place-items-center mb-2">
+                  <div className="w-full aspect-square md:aspect-[4/3] rounded-xl bg-slate-100 grid place-items-center mb-2">
                     <ShoppingBag className="h-8 w-8 text-slate-400" />
                   </div>
 
@@ -743,21 +758,40 @@ export default function SalesPage() {
         />
       </div>
 
-      {/* Mobile drawer */}
+     {/* Mobile/Tablet drawer */}
       <div className="lg:hidden">
-        <button
-          onClick={() => setCartOpen(true)}
-          className="fixed bottom-4 right-4 z-40 inline-flex items-center gap-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-4 py-3 shadow-xl"
-        >
-          <ShoppingBag className="h-5 w-5" />
-          Carrito ({cartItemsCount})
-          <span className="ml-1">{formatCurrency(cartTotal)}</span>
-        </button>
+        {!isTablet && (
+          <button
+            onClick={() => setCartOpen(true)}
+            className="fixed bottom-8 right-4 z-40 inline-flex items-center gap-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-5 py-3 shadow-xl"
+          >
+            <ShoppingBag className="h-5 w-5" />
+            Carrito ({cartItemsCount})
+            <span className="ml-1">{formatCurrency(cartTotal)}</span>
+          </button>
+        )}
+         
+         {isTablet && (
+            <div className="fixed bottom-4 right-4 z-40">
+              <button
+                onClick={() => setCartOpen(true)}
+                className="inline-flex items-center gap-2 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-4 py-3 shadow-xl"
+              >
+                <ShoppingBag className="h-5 w-5" />
+                Ver carrito
+                <span className="ml-2 rounded-xl bg-white/20 px-2 py-1 text-sm">
+                  {cartItemsCount}
+                </span>
+                <span className="ml-2">{formatCurrency(cartTotal)}</span>
+              </button>
+            </div>
+          )}
+
 
         {cartOpen && (
           <div className="fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/50" onClick={() => setCartOpen(false)} />
-            <div className="absolute right-0 top-0 h-full w-[92%] max-w-md">
+            <div className="absolute right-0 top-0 h-full w-[92%] max-w-md md:w-[520px] md:max-w-none">
               <div className="h-full relative">
                 <button
                   onClick={() => setCartOpen(false)}

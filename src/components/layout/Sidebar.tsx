@@ -14,7 +14,7 @@ import {
 
 import { useAuth } from "../../context/AuthContext";
 import type { Permission } from "../../context/AuthContext";
-import snaqui from "../../assets/snaqui.jpeg";
+import snaqui from "../../assets/snaqui.jpeg"; 
 
 type NavItem = {
   label: string;
