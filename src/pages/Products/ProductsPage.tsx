@@ -510,104 +510,125 @@ export default function ProductsPage() {
       </div>
 
       {/* ✅ MOBILE CARDS */}
-      <div className="lg:hidden space-y-3">
-        {filteredProducts.map((p) => {
-          const low = p.stock <= p.min_stock;
-          const inactive = p.status === 0;
+        <div className="lg:hidden space-y-3">
+          {filteredProducts.map((p) => {
+            const low = p.stock <= p.min_stock;
+            const inactive = p.status === 0;
 
-          return (
-            <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-10 w-10 rounded-lg bg-slate-100 grid place-items-center flex-shrink-0">
+            return (
+              <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                {/* Top */}
+                <div className="flex items-start gap-3">
+                  <div className="h-11 w-11 rounded-xl bg-slate-100 grid place-items-center flex-shrink-0">
                     <Package className="h-5 w-5 text-slate-500" />
                   </div>
-                  <div className="min-w-0">
+
+                  <div className="min-w-0 flex-1">
                     <p className="font-semibold text-slate-900 truncate">{p.description}</p>
                     <p className="text-xs text-slate-500 truncate">
                       {p.category} • ID: {p.id}
                     </p>
+
+                    {/* Badges */}
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                        {formatCurrency(p.price)}
+                      </span>
+
+                      {inactive ? (
+                        <span className="inline-flex items-center rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-800">
+                          Inactivo
+                        </span>
+                      ) : low ? (
+                        <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+                          Stock bajo
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
+                          Activo
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                {/* Bottom metrics */}
+                <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
+                  <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
+                    <p className="text-xs text-slate-500">Stock</p>
+                    <p className={low ? "font-bold text-rose-600" : "font-bold text-slate-900"}>{p.stock}</p>
+                  </div>
+
+                  <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
+                    <p className="text-xs text-slate-500">Mínimo</p>
+                    <p className="font-bold text-slate-900">{p.min_stock}</p>
+                  </div>
+
+                  <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
+                    <p className="text-xs text-slate-500">Costo</p>
+                    <p className="font-bold text-slate-900">{formatCurrency(p.cost)}</p>
+                  </div>
+                </div>
+
+                {/* Actions (tap friendly) */}
+                <div className="mt-4 grid grid-cols-3 gap-2">
                   {inactive ? (
                     <button
                       onClick={() => doActivate(p.id)}
                       disabled={busyId === p.id}
-                      className="h-9 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white text-sm font-semibold inline-flex items-center"
-                      aria-label="Activar"
+                      className="col-span-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white py-2.5 font-semibold inline-flex items-center justify-center"
                     >
                       <Power className="h-4 w-4 mr-2" />
-                      {busyId === p.id ? "Activando..." : "Activar"}
+                      {busyId === p.id ? "Activando..." : "Activar producto"}
                     </button>
                   ) : (
                     <>
                       <button
                         onClick={() => openEdit(p)}
-                        className="h-9 w-9 rounded-lg bg-slate-100 hover:bg-slate-200 grid place-items-center"
-                        aria-label="Editar"
+                        className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 py-2.5 font-semibold text-slate-700 inline-flex items-center justify-center gap-2"
                       >
-                        <Pencil className="h-4 w-4 text-slate-700" />
+                        <Pencil className="h-4 w-4" />
+                        Editar
                       </button>
 
                       <button
                         onClick={() => askDelete(p.id)}
                         disabled={busyId === p.id}
-                        className="h-9 w-9 rounded-lg bg-rose-100 hover:bg-rose-200 grid place-items-center disabled:opacity-60"
-                        aria-label="Eliminar"
+                        className="rounded-xl bg-rose-500 hover:bg-rose-600 disabled:opacity-60 text-white py-2.5 font-semibold inline-flex items-center justify-center gap-2"
                       >
-                        <Trash2 className="h-4 w-4 text-rose-700" />
+                        <Trash2 className="h-4 w-4" />
+                        Eliminar
+                      </button>
+
+                      <button
+                        onClick={() => openEdit(p)}
+                        className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white py-2.5 font-semibold inline-flex items-center justify-center"
+                        title="Editar rápido"
+                      >
+                        Ver
                       </button>
                     </>
                   )}
                 </div>
               </div>
+            );
+          })}
 
-              <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <p className="text-xs text-slate-500">Precio</p>
-                  <p className="font-semibold text-slate-900">{formatCurrency(p.price)}</p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-slate-500">Stock</p>
-                  <p className={low ? "font-semibold text-rose-600" : "font-semibold text-slate-900"}>{p.stock}</p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-slate-500">Mínimo</p>
-                  <p className="font-semibold text-slate-900">{p.min_stock}</p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-slate-500">Estado</p>
-                  {inactive ? (
-                    <span className="inline-flex px-3 py-1 rounded-full bg-slate-200 text-slate-800 text-xs font-semibold">
-                      Inactivo
-                    </span>
-                  ) : low ? (
-                    <span className="inline-flex px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold">
-                      Stock bajo
-                    </span>
-                  ) : (
-                    <span className="inline-flex px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold">
-                      Activo
-                    </span>
-                  )}
-                </div>
-              </div>
+          {filteredProducts.length === 0 && (
+            <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-500">
+              <Package className="h-12 w-12 mx-auto mb-4 opacity-60" />
+              <p className="font-semibold text-slate-700">No se encontraron productos</p>
+              <p className="text-sm">Intenta con otro término de búsqueda</p>
             </div>
-          );
-        })}
-      </div>
+          )}
+        </div>
 
       {/* Modal Crear/Editar (NO TOCADO) */}
       {showModal && (
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowModal(false)} />
           <div className="relative h-full w-full grid place-items-center p-4">
-            <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl">
+           <div className="w-full max-w-lg max-h-[85vh] overflow-auto rounded-2xl border border-slate-200 bg-white shadow-2xl">
               <div className="p-5 flex items-start justify-between gap-3">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900">{editing ? "Editar producto" : "Nuevo producto"}</h3>
