@@ -129,7 +129,9 @@ export default function ReportPage() {
       setLoading(true);
       setError("");
 
-      const res = await getSales();
+     console.log("ReportPage: loadSales start");
+        const res = await getSales();
+        console.log("ReportPage: getSales res", res);
       if (!res.success) throw new Error(res.error || res.message || "No se pudieron cargar ventas");
 
       const mapped: SaleUI[] = (res.data || [])
