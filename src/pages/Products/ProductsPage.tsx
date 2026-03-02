@@ -520,9 +520,9 @@ export default function ProductsPage() {
           const inactive = p.status === 0;
 
           return (
-            <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-3">
               {/* Top */}
-              <div className="flex items-start gap-3">
+              <div className="flex  gap-3">
                 <div className="h-11 w-11 rounded-xl bg-slate-100 grid place-items-center flex-shrink-0">
                   <Package className="h-5 w-5 text-slate-500" />
                 </div>
@@ -557,8 +557,8 @@ export default function ProductsPage() {
               </div>
 
               {/* Bottom metrics */}
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-                <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-1 gap-3 text-sm">
+                <div className="rounded-xl bg-slate-50 border border-slate-200 p-2">
                   <p className="text-xs text-slate-500">Stock</p>
                   <p className={low ? "font-bold text-rose-600" : "font-bold text-slate-900"}>{p.stock}</p>
                 </div>
