@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
 import AuthLayout from "../components/layout/AuthLayout";
 import ProtectedRoute from "./ProtectedRoute";
+import RootRedirect from "./RootRedirect";
 
 import LoginPage from "../pages/Auth/LoginPage";
 
@@ -26,6 +27,9 @@ export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* ✅ Root SIEMPRE resuelve */}
+        <Route path="/" element={<RootRedirect />} />
+
         {/* Públicas */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
@@ -34,8 +38,6 @@ export default function AppRouter() {
         {/* Protegidas */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/ventas" element={<SalesPage />} />
             <Route path="/productos" element={<ProductsPage />} />
