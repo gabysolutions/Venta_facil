@@ -9,27 +9,29 @@ export default defineConfig({
     legacy({
       targets: ["defaults", "iOS >= 12", "Safari >= 12"],
       modernPolyfills: true,
-      additionalLegacyPolyfills: ["regenerator-runtime/runtime"],
       renderLegacyChunks: true,
-      polyfills: true,
+      additionalLegacyPolyfills: ["regenerator-runtime/runtime"],
     }),
   ],
 
+  // ✅ CLAVE: que el bundle "moderno" no use sintaxis nueva
+  esbuild: {
+    target: "es2015",
+  },
+
   build: {
+    target: "es2015",
+    cssTarget: "safari13",
     chunkSizeWarningLimit: 1200,
+
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (!id.includes("node_modules")) return;
 
-          if (
-            id.includes("html2canvas") ||
-            id.includes("html-to-image") ||
-            id.includes("jspdf")
-          ) {
+          if (id.includes("html2canvas") || id.includes("html-to-image") || id.includes("jspdf")) {
             return "capture";
           }
-
           if (id.includes("sweetalert2")) return "sweetalert";
           if (id.includes("lucide-react")) return "icons";
 
