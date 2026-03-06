@@ -21,6 +21,7 @@ import ReportFilters from "../../components/report/ReportFilters";
 import type { PaymentMethod, StatusFilter } from "../../components/report/ReportFilters";
 import SalesCards, { type SaleUI } from "../../components/report/SalesCards";
 import SalesTable from "../../components/report/SalesTable";
+import * as XLSX from "xlsx";
 
 type SaleItem = {
   productName: string;
@@ -42,6 +43,21 @@ function formatCurrency(value: number) {
   }).format(value);
 }
 
+function formatExcelDate(dateValue: Date | string) {
+  const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+
+  if (isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat("es-MX", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(date);
+}
 function formatDateTime(date: Date) {
   if (!(date instanceof Date) || isNaN(date.getTime())) {
     return "—";
@@ -118,7 +134,7 @@ export default function ReportPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saleToDelete, setSaleToDelete] = useState<SaleUI | null>(null);
 
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE = 10;
   const [page, setPage] = useState(1);
 
   const ticketRef = useRef<HTMLDivElement | null>(null);
@@ -197,28 +213,36 @@ export default function ReportPage() {
     return { total, count, average };
   }, [filteredSales]);
 
-  const exportCsv = () => {
-    const header = ["id", "fecha", "cajero", "metodo", "estatus", "total"];
-    const rows = sortedSales.map((s) => [
-      s.id,
-      s.createdAt.toISOString(),
-      `"${(s.cashierName || "").replaceAll('"', '""')}"`,
-      paymentLabels[s.paymentMethod],
-      getStatusLabel(s.status),
-      s.total,
-    ]);
+  const exportExcel = () => {
+      const data = sortedSales.map((s) => ({
+        ID: s.id,
+        Fecha: formatExcelDate(s.createdAt),
+        Cajero: s.cashierName,
+        Metodo: paymentLabels[s.paymentMethod],
+        Estatus: getStatusLabel(s.status),
+        Total: s.total,
+      }));
 
-    const csv = [header.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
+      const worksheet = XLSX.utils.json_to_sheet(data);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `ventas_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
+      
+      worksheet["!cols"] = [
+        { wch: 8 },   
+        { wch: 20 }, 
+        { wch: 25 }, 
+        { wch: 15 }, 
+        { wch: 15 },  
+        { wch: 12 },  
+      ];
 
-    URL.revokeObjectURL(url);
-  };
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Ventas");
+
+      XLSX.writeFile(
+        workbook,
+        `ventas_${new Date().toISOString().slice(0, 10)}.xlsx`
+      );
+    };
 
   const openSaleDetail = async (sale: SaleUI) => {
     setSelectedSale(sale);
@@ -420,11 +444,11 @@ export default function ReportPage() {
         </div>
 
         <button
-          onClick={exportCsv}
+          onClick={exportExcel}
           className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold px-4 py-2.5 transition w-full sm:w-auto"
         >
           <FileDown className="h-5 w-5 mr-2" />
-          Exportar CSV
+          Exportar Excel
         </button>
       </div>
 

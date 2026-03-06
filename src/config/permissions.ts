@@ -7,6 +7,7 @@ export type AppRole = "ADMIN" | "CAJERA";
 
 export type Permission =
   | "ACCESO_VENTAS"
+  | "VENTA_CREDITO"
   | "VISTA_CORTE"
   | "ABRIR_CAJA"
   | "CERRAR_CAJA"
@@ -27,6 +28,7 @@ export const ROLE_MAP: Record<ApiRole, AppRole> = {
 export const PERMISSIONS_BY_ROLE: Record<AppRole, Permission[]> = {
   ADMIN: [
     "ACCESO_VENTAS",
+    "VENTA_CREDITO",
     "VISTA_CORTE",
     "ABRIR_CAJA",
     "CERRAR_CAJA",

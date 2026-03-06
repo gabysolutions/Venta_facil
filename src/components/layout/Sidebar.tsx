@@ -45,6 +45,10 @@ export default function Sidebar({ open = false, onClose, onRequestLogout }: Side
   const { user, hasPermission } = useAuth();
   const location = useLocation();
 
+  const canQuickSale = hasPermission("ACCESO_VENTAS");
+  const canCreditSale = hasPermission("VENTA_CREDITO");
+  const canSeeVentasGroup = canQuickSale || canCreditSale;
+
   const displayUser = useMemo(() => {
     const name = user?.name ?? "Usuario";
     const role = user?.role ?? "—";
@@ -110,7 +114,7 @@ export default function Sidebar({ open = false, onClose, onRequestLogout }: Side
         <div className="flex-1 min-h-0 overflow-y-auto px-3 py-4">
           <nav>
             <ul className="space-y-1">
-              {hasPermission("ACCESO_VENTAS") && (
+              {canSeeVentasGroup && (
                 <li>
                   <button
                     type="button"
@@ -142,61 +146,64 @@ export default function Sidebar({ open = false, onClose, onRequestLogout }: Side
 
                   {ventasOpen && (
                     <div className="mt-2 ml-6 pl-3 border-l border-white/10 space-y-1">
-                      <NavLink
-                        to="/ventas"
-                        end
-                        onClick={onClose}
-                        className={({ isActive }) =>
-                          [
-                            "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition relative",
-                            isActive
-                              ? "bg-emerald-500/15 border border-emerald-400/20 text-slate-100"
-                              : "text-slate-300 hover:bg-white/5",
-                          ].join(" ")
-                        }
-                      >
-                      
-                        {({ isActive }) => (
-                          <>
-                            {isActive && (
-                              <span className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-1 rounded-r bg-emerald-400" />
-                            )}
-                            <span className={isActive ? "text-emerald-400" : "text-slate-400"}>
-                              <ShoppingCart size={16} />
-                            </span>
-                            <span className={isActive ? "font-semibold" : "font-medium"}>
-                              Venta rápida
-                            </span>
-                          </>
-                        )}
-                      </NavLink>
+                      {canQuickSale && (
+                        <NavLink
+                          to="/ventas"
+                          end
+                          onClick={onClose}
+                          className={({ isActive }) =>
+                            [
+                              "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition relative",
+                              isActive
+                                ? "bg-emerald-500/15 border border-emerald-400/20 text-slate-100"
+                                : "text-slate-300 hover:bg-white/5",
+                            ].join(" ")
+                          }
+                        >
+                          {({ isActive }) => (
+                            <>
+                              {isActive && (
+                                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-1 rounded-r bg-emerald-400" />
+                              )}
+                              <span className={isActive ? "text-emerald-400" : "text-slate-400"}>
+                                <ShoppingCart size={16} />
+                              </span>
+                              <span className={isActive ? "font-semibold" : "font-medium"}>
+                                Venta rápida
+                              </span>
+                            </>
+                          )}
+                        </NavLink>
+                      )}
 
-                      <NavLink
-                        to="/ventas/credito"
-                        onClick={onClose}
-                        className={({ isActive }) =>
-                          [
-                            "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition relative",
-                            isActive
-                              ? "bg-emerald-500/15 border border-emerald-400/20 text-slate-100"
-                              : "text-slate-300 hover:bg-white/5",
-                          ].join(" ")
-                        }
-                      >
-                        {({ isActive }) => (
-                          <>
-                            {isActive && (
-                              <span className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-1 rounded-r bg-emerald-400" />
-                            )}
-                            <span className={isActive ? "text-emerald-400" : "text-slate-400"}>
-                              <BanknoteArrowUp size={16} />
-                            </span>
-                            <span className={isActive ? "font-semibold" : "font-medium"}>
-                              Crédito
-                            </span>
-                          </>
-                        )}
-                      </NavLink>
+                      {canCreditSale && (
+                        <NavLink
+                          to="/ventas/credito"
+                          onClick={onClose}
+                          className={({ isActive }) =>
+                            [
+                              "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition relative",
+                              isActive
+                                ? "bg-emerald-500/15 border border-emerald-400/20 text-slate-100"
+                                : "text-slate-300 hover:bg-white/5",
+                            ].join(" ")
+                          }
+                        >
+                          {({ isActive }) => (
+                            <>
+                              {isActive && (
+                                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-1 rounded-r bg-emerald-400" />
+                              )}
+                              <span className={isActive ? "text-emerald-400" : "text-slate-400"}>
+                                <BanknoteArrowUp size={16} />
+                              </span>
+                              <span className={isActive ? "font-semibold" : "font-medium"}>
+                                Crédito
+                              </span>
+                            </>
+                          )}
+                        </NavLink>
+                      )}
                     </div>
                   )}
                 </li>
@@ -300,3 +307,4 @@ export default function Sidebar({ open = false, onClose, onRequestLogout }: Side
     </>
   );
 }
+

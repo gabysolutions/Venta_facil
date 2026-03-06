@@ -1,4 +1,4 @@
-// src/router/RootRedirect.tsx
+
 import { Navigate } from "react-router-dom";
 
 function getToken() {

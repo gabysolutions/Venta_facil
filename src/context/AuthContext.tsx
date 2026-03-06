@@ -6,7 +6,7 @@ export type Role = "ADMIN" | "CAJERA";
 export type Permission = PrivilegeKey;
 
 export type User = {
-  id: string; // viene como string
+  id: string;
   name: string;
   role: Role;
   permissions: Permission[];
@@ -15,7 +15,7 @@ export type User = {
 type AuthState = {
   user: User | null;
   token: string | null;
-  ready: boolean; 
+  ready: boolean;
   isAuthenticated: boolean;
   login: (payload: { user: User; token?: string; remember?: boolean }) => void;
   logout: () => void;
@@ -36,7 +36,6 @@ function clearAuthStorage() {
   sessionStorage.removeItem(LS_USER);
   sessionStorage.removeItem(LS_TOKEN);
 
-  // por si traías llaves viejas
   localStorage.removeItem("token");
   localStorage.removeItem("user");
   localStorage.removeItem("permissions");
@@ -63,8 +62,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
 
-
-  const getToken = () => token || sessionStorage.getItem(LS_TOKEN) || localStorage.getItem(LS_TOKEN);
+  const getToken = () =>
+    token || sessionStorage.getItem(LS_TOKEN) || localStorage.getItem(LS_TOKEN);
 
   const persistUser = (nextUser: User) => {
     const inSession = !!sessionStorage.getItem(LS_TOKEN);
@@ -73,62 +72,75 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const refreshPermissions = async () => {
-    const t = getToken();
-    if (!t) return;
-    if (!user) return;
+    const currentToken = getToken();
+    if (!currentToken || !user) return;
 
     const userId = Number(user.id);
     if (!Number.isFinite(userId)) return;
 
-    const res = await getPrivilegesByUserId(userId);
-    if (!res.success || !res.data) return;
+    try {
+      const res = await getPrivilegesByUserId(userId);
+      if (!res.success || !res.data) return;
 
-    const perms = (res.data.permissions ?? []).map((p) => p.key) as Permission[];
-    const nextUser: User = { ...user, permissions: perms };
+      const perms: Permission[] = (res.data.permissions ?? []).map((p) => p.key);
+      const nextUser: User = {
+        ...user,
+        permissions: perms,
+      };
 
-    setUser(nextUser);
-    persistUser(nextUser);
+      setUser(nextUser);
+      persistUser(nextUser);
+    } catch {
+      
+    }
   };
 
- useEffect(() => {
-  const { rawUser, rawToken } = readAuthFromStorage();
-
-  if (rawUser) {
-    try {
-      setUser(JSON.parse(rawUser));
-    } catch {
-      clearAuthStorage();
-      setUser(null);
-      setToken(null);
-      setReady(true); 
-      return;
-    }
-  }
-
-  if (rawToken) setToken(rawToken);
-
-  setReady(true);
-}, []);
-
-  // cuando haya token+user, trae permisos reales
   useEffect(() => {
-    if (!user) return;
+    const { rawUser, rawToken } = readAuthFromStorage();
+
+    if (rawUser) {
+      try {
+        const parsedUser = JSON.parse(rawUser) as User;
+        setUser(parsedUser);
+      } catch {
+        clearAuthStorage();
+        setUser(null);
+        setToken(null);
+        setReady(true);
+        return;
+      }
+    }
+
+    if (rawToken) {
+      setToken(rawToken);
+    }
+
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!user?.id) return;
     if (!getToken()) return;
 
-    refreshPermissions().catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    refreshPermissions();
   }, [user?.id, token]);
 
   const login: AuthState["login"] = ({ user: incomingUser, token: incomingToken, remember = true }) => {
     clearAuthStorage();
 
     setUser(incomingUser);
-    if (incomingToken) setToken(incomingToken);
+
+    if (incomingToken) {
+      setToken(incomingToken);
+    }
 
     const storage = remember ? localStorage : sessionStorage;
-    storage.setItem(LS_USER, JSON.stringify(incomingUser));
-    if (incomingToken) storage.setItem(LS_TOKEN, incomingToken);
 
+    storage.setItem(LS_USER, JSON.stringify(incomingUser));
+
+    if (incomingToken) {
+      storage.setItem(LS_TOKEN, incomingToken);
+    }
 
     if (incomingToken) {
       (async () => {
@@ -139,13 +151,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const res = await getPrivilegesByUserId(userId);
           if (!res.success || !res.data) return;
 
-          const perms = (res.data.permissions ?? []).map((p) => p.key) as Permission[];
-          const nextUser: User = { ...incomingUser, permissions: perms };
+          const perms: Permission[] = (res.data.permissions ?? []).map((p) => p.key);
+
+          const nextUser: User = {
+            ...incomingUser,
+            permissions: perms,
+          };
 
           setUser(nextUser);
           storage.setItem(LS_USER, JSON.stringify(nextUser));
         } catch {
-          // si falla, te quedas con lo que venía en login
+        
         }
       })();
     }
@@ -173,7 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       getToken,
       refreshPermissions,
     }),
-    [user, token]
+    [user, token, ready]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
