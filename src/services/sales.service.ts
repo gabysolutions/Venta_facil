@@ -1,16 +1,15 @@
 import { http } from "./http";
 
-/** ====== LISTADO (CABECERA) ====== */
 export type Sale = {
   id: number;
   user_id: number;
-  pay_method: string; // "Efectivo" | "Transferencia" | etc
+  pay_method: string;
   total: number;
   cash_received: number;
   change_returned: number;
-  date: string; // "YYYY-MM-DD HH:mm:ss"
-  status: number; // 1 activo, 0 cancelado/inactivo
-  user?: string; // "Ornán Gabriel"
+  date: string;
+  status: number;
+  user?: string;
 };
 
 export type SalesResponse = {
@@ -20,9 +19,8 @@ export type SalesResponse = {
   error?: string;
 };
 
-/** ====== DETALLE (ITEMS) ====== */
 export type SaleDetailItem = {
-  id: number; // id del producto o id del detalle (según backend)
+  id: number;
   quantity: number;
   description: string;
   price: number;
@@ -42,7 +40,6 @@ export type MessageResponse = {
   error?: string;
 };
 
-/** Payload para crear venta */
 export type SaleProductPayload = {
   product_id: number;
   quantity: number;
@@ -52,35 +49,47 @@ export type SaleProductPayload = {
 };
 
 export type CreateSalePayload = {
-  pay_method: string; // tu ejemplo manda "efectivo" (lowercase)
+  pay_method: string;
   total: number;
   cash_received: number;
-  change: number; // en GET viene como change_returned
+  change: number;
   products: SaleProductPayload[];
 };
 
-/** GET: listar ventas */
+export type CreateSaleCreditPayload = {
+  pay_method: string;
+  total: number;
+  cash_received: number;
+  change: number;
+  products: SaleProductPayload[];
+};
+
 export async function getSales() {
   const { data } = await http.get<SalesResponse>("/sales");
   return data;
 }
 
-/** GET: obtener detalle (items) de una venta por id */
 export async function getSaleDetails(id: number | string) {
   const { data } = await http.get<SaleDetailResponse>(`/sales/${id}`);
   return data;
 }
 
-/** POST: crear venta */
 export async function createSale(payload: CreateSalePayload) {
   const { data } = await http.post<MessageResponse>("/sales", payload);
   return data;
 }
 
-/** DELETE: cancelar/eliminar venta por id (sin body)
- *  OJO: si tu backend usa el mismo /api/sales/:id para GET detalle,
- *  esto sigue funcionando porque el método es DELETE.
- */
+
+export async function createSaleCredit(payload: CreateSaleCreditPayload) {
+  const { data } = await http.post<MessageResponse>("/sales/credit", payload);
+  return data;
+}
+
+export async function finalizeCreditSale(id: number | string) {
+  const { data } = await http.put<MessageResponse>(`/sales/${id}`);
+  return data;
+}
+
 export async function deleteSale(id: number | string) {
   const { data } = await http.delete<MessageResponse>(`/sales/${id}`);
   return data;

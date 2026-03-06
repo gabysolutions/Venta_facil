@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { NavLink } from "react-router-dom";
+import React, { useMemo, useState, useEffect } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutGrid,
   ShoppingCart,
@@ -10,6 +10,7 @@ import {
   BanknoteArrowUp,
   Settings,
   LogOut,
+  ChevronDown,
 } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
@@ -26,7 +27,6 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { label: "Dashboard", to: "/dashboard", icon: <LayoutGrid size={18} />, section: "main" },
-  { label: "Ventas", to: "/ventas", icon: <ShoppingCart size={18} />, section: "main", requiredPerm: "ACCESO_VENTAS" },
   { label: "Productos", to: "/productos", icon: <Package size={18} />, section: "main", requiredPerm: "ADMINISTRAR_PRODUCTOS" },
   { label: "Inventario", to: "/inventario", icon: <Boxes size={18} />, section: "main", requiredPerm: "ADMINISTRAR_INVENTARIO" },
   { label: "Reportes", to: "/reportes", icon: <BarChart3 size={18} />, section: "main", requiredPerm: "VER_REPORTES" },
@@ -43,6 +43,7 @@ type SidebarProps = {
 
 export default function Sidebar({ open = false, onClose, onRequestLogout }: SidebarProps) {
   const { user, hasPermission } = useAuth();
+  const location = useLocation();
 
   const displayUser = useMemo(() => {
     const name = user?.name ?? "Usuario";
@@ -54,6 +55,7 @@ export default function Sidebar({ open = false, onClose, onRequestLogout }: Side
         .slice(0, 2)
         .map((w: string) => w[0]?.toUpperCase())
         .join("") || "U";
+
     return { name, role, initials };
   }, [user]);
 
@@ -64,6 +66,15 @@ export default function Sidebar({ open = false, onClose, onRequestLogout }: Side
 
   const main = allowedItems.filter((i) => i.section === "main");
   const system = allowedItems.filter((i) => i.section === "system");
+
+  const ventasSectionActive = location.pathname.startsWith("/ventas");
+  const ventasActive = location.pathname === "/ventas";
+
+  const [ventasOpen, setVentasOpen] = useState<boolean>(ventasSectionActive);
+
+  useEffect(() => {
+    if (ventasSectionActive) setVentasOpen(true);
+  }, [ventasSectionActive]);
 
   return (
     <>
@@ -95,10 +106,102 @@ export default function Sidebar({ open = false, onClose, onRequestLogout }: Side
           </div>
         </div>
 
-        {/* ✅ BODY: aquí va el truco (scroll) */}
+        {/* Body */}
         <div className="flex-1 min-h-0 overflow-y-auto px-3 py-4">
           <nav>
             <ul className="space-y-1">
+              {hasPermission("ACCESO_VENTAS") && (
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setVentasOpen((v) => !v)}
+                    className={[
+                      "w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm transition relative",
+                      ventasActive
+                        ? "bg-white/10 border border-white/10 text-slate-100"
+                        : "text-slate-300 hover:bg-white/5",
+                    ].join(" ")}
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className={ventasSectionActive ? "text-emerald-400" : "text-slate-400"}>
+                        <ShoppingCart size={18} />
+                      </span>
+                      <span className={ventasSectionActive ? "font-semibold" : "font-medium"}>
+                        Ventas
+                      </span>
+                    </span>
+
+                    <ChevronDown
+                      size={18}
+                      className={[
+                        "transition",
+                        ventasOpen ? "rotate-180 text-slate-300" : "rotate-0 text-slate-400",
+                      ].join(" ")}
+                    />
+                  </button>
+
+                  {ventasOpen && (
+                    <div className="mt-2 ml-6 pl-3 border-l border-white/10 space-y-1">
+                      <NavLink
+                        to="/ventas"
+                        end
+                        onClick={onClose}
+                        className={({ isActive }) =>
+                          [
+                            "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition relative",
+                            isActive
+                              ? "bg-emerald-500/15 border border-emerald-400/20 text-slate-100"
+                              : "text-slate-300 hover:bg-white/5",
+                          ].join(" ")
+                        }
+                      >
+                      
+                        {({ isActive }) => (
+                          <>
+                            {isActive && (
+                              <span className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-1 rounded-r bg-emerald-400" />
+                            )}
+                            <span className={isActive ? "text-emerald-400" : "text-slate-400"}>
+                              <ShoppingCart size={16} />
+                            </span>
+                            <span className={isActive ? "font-semibold" : "font-medium"}>
+                              Venta rápida
+                            </span>
+                          </>
+                        )}
+                      </NavLink>
+
+                      <NavLink
+                        to="/ventas/credito"
+                        onClick={onClose}
+                        className={({ isActive }) =>
+                          [
+                            "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition relative",
+                            isActive
+                              ? "bg-emerald-500/15 border border-emerald-400/20 text-slate-100"
+                              : "text-slate-300 hover:bg-white/5",
+                          ].join(" ")
+                        }
+                      >
+                        {({ isActive }) => (
+                          <>
+                            {isActive && (
+                              <span className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-1 rounded-r bg-emerald-400" />
+                            )}
+                            <span className={isActive ? "text-emerald-400" : "text-slate-400"}>
+                              <BanknoteArrowUp size={16} />
+                            </span>
+                            <span className={isActive ? "font-semibold" : "font-medium"}>
+                              Crédito
+                            </span>
+                          </>
+                        )}
+                      </NavLink>
+                    </div>
+                  )}
+                </li>
+              )}
+
               {main.map((item) => (
                 <li key={item.to}>
                   <NavLink
@@ -117,8 +220,12 @@ export default function Sidebar({ open = false, onClose, onRequestLogout }: Side
                         {isActive && (
                           <span className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r bg-emerald-400" />
                         )}
-                        <span className={isActive ? "text-slate-100" : "text-slate-400"}>{item.icon}</span>
-                        <span className={isActive ? "font-semibold" : "font-medium"}>{item.label}</span>
+                        <span className={isActive ? "text-slate-100" : "text-slate-400"}>
+                          {item.icon}
+                        </span>
+                        <span className={isActive ? "font-semibold" : "font-medium"}>
+                          {item.label}
+                        </span>
                       </>
                     )}
                   </NavLink>
@@ -149,8 +256,12 @@ export default function Sidebar({ open = false, onClose, onRequestLogout }: Side
                             {isActive && (
                               <span className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r bg-emerald-400" />
                             )}
-                            <span className={isActive ? "text-slate-100" : "text-slate-400"}>{item.icon}</span>
-                            <span className={isActive ? "font-semibold" : "font-medium"}>{item.label}</span>
+                            <span className={isActive ? "text-slate-100" : "text-slate-400"}>
+                              {item.icon}
+                            </span>
+                            <span className={isActive ? "font-semibold" : "font-medium"}>
+                              {item.label}
+                            </span>
                           </>
                         )}
                       </NavLink>
@@ -162,7 +273,7 @@ export default function Sidebar({ open = false, onClose, onRequestLogout }: Side
           </nav>
         </div>
 
-        {/* ✅ Footer: siempre visible */}
+        {/* Footer */}
         <div className="px-4 py-4 border-t border-white/10">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-white/10 border border-white/10 grid place-items-center text-sm font-semibold">

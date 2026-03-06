@@ -44,6 +44,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
+       
         target: "https://puntoventa-production-a1c6.up.railway.app",
         changeOrigin: true,
         secure: false,

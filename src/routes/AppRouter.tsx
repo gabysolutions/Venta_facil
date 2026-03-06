@@ -9,6 +9,7 @@ import LoginPage from "../pages/Auth/LoginPage";
 
 import DashboardPage from "../pages/Dasboard/Dasboard";
 import SalesPage from "../pages/Sales/SalesPage";
+import CreditSalesPage from "../pages/Sales/SalesCreditPage"; 
 import ProductsPage from "../pages/Products/ProductsPage";
 import InventoryPage from "../pages/Inventory/Inventory";
 import ReportPage from "../pages/Report/ReportPage";
@@ -27,19 +28,20 @@ export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* ✅ Root SIEMPRE resuelve */}
         <Route path="/" element={<RootRedirect />} />
 
-        {/* Públicas */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
         </Route>
 
-        {/* Protegidas */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+
+            {/* Ventas */}
             <Route path="/ventas" element={<SalesPage />} />
+            <Route path="/ventas/credito" element={<CreditSalesPage />} />
+
             <Route path="/productos" element={<ProductsPage />} />
             <Route path="/inventario" element={<InventoryPage />} />
             <Route path="/reportes" element={<ReportPage />} />
@@ -47,7 +49,6 @@ export default function AppRouter() {
             <Route path="/abrir-caja" element={<OpenCashoutPage />} />
             <Route path="/egresos" element={<ExpensesPage />} />
 
-            {/* Configuración con subrutas */}
             <Route path="/configuracion" element={<ConfigLayout />}>
               <Route index element={<ConfigPage />} />
               <Route path="negocio" element={<BusinessSettings />} />
@@ -58,7 +59,6 @@ export default function AppRouter() {
           </Route>
         </Route>
 
-        {/* 404 */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

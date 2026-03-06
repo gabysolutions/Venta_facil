@@ -1,28 +1,26 @@
-// src/pages/Report/ReportPage.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Search,
-  CreditCard,
-  Banknote,
-  ArrowRight,
   FileDown,
-  Eye,
   X,
   ShoppingBag,
   Loader2,
-  Trash2,
-  ReceiptText,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-
-
 import type React from "react";
 
-import { getSales, getSaleDetails, deleteSale } from "../../services/sales.service";
+import {
+  getSales,
+  getSaleDetails,
+  deleteSale,
+  finalizeCreditSale,
+} from "../../services/sales.service";
+
 import ConfirmModal from "../../components/ui/ConfirmModal";
 import Ticket, { type SaleUI as TicketSaleUI } from "./ticket";
 
-type PaymentMethod = "cash" | "card" | "transfer";
+import ReportFilters from "../../components/report/ReportFilters";
+import type { PaymentMethod, StatusFilter } from "../../components/report/ReportFilters";
+import SalesCards, { type SaleUI } from "../../components/report/SalesCards";
+import SalesTable from "../../components/report/SalesTable";
 
 type SaleItem = {
   productName: string;
@@ -31,31 +29,17 @@ type SaleItem = {
   subtotal: number;
 };
 
-type SaleUI = {
-  id: number;
-  createdAt: Date;
-  cashierName: string;
-  paymentMethod: PaymentMethod;
-  total: number;
-  cashReceived?: number;
-  change?: number;
-  items?: SaleItem[];
-};
-
 const paymentLabels: Record<PaymentMethod, string> = {
   cash: "Efectivo",
   card: "Tarjeta",
   transfer: "Transferencia",
 };
 
-const paymentIcons: Record<PaymentMethod, LucideIcon> = {
-  cash: Banknote,
-  card: CreditCard,
-  transfer: ArrowRight,
-};
-
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(value);
+  return new Intl.NumberFormat("es-MX", {
+    style: "currency",
+    currency: "MXN",
+  }).format(value);
 }
 
 function formatDateTime(date: Date) {
@@ -81,12 +65,25 @@ function mapPayMethod(pay_method: string): PaymentMethod {
   return "transfer";
 }
 
+function getStatusLabel(status: number) {
+  if (status === 0) return "Cancelada";
+  if (status === 1) return "Finalizada";
+  if (status === 2) return "Pendiente";
+  return "Desconocido";
+}
+
+function getStatusBadgeClass(status: number) {
+  if (status === 0) return "bg-rose-100 text-rose-700";
+  if (status === 1) return "bg-emerald-100 text-emerald-700";
+  if (status === 2) return "bg-amber-100 text-amber-700";
+  return "bg-slate-100 text-slate-700";
+}
+
 function getErrorMessage(e: unknown, fallback: string) {
   if (e instanceof Error) return e.message;
   return fallback;
 }
 
-// Si tu ConfirmModal no tiene typing, lo casteamos “safe-ish”
 const ConfirmModalAny = ConfirmModal as unknown as (props: {
   open: boolean;
   title: string;
@@ -101,57 +98,53 @@ const ConfirmModalAny = ConfirmModal as unknown as (props: {
 export default function ReportPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPayment, setFilterPayment] = useState<PaymentMethod | "all">("all");
+  const [filterStatus, setFilterStatus] = useState<StatusFilter>("all");
 
   const [sales, setSales] = useState<SaleUI[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
 
   const [selectedSale, setSelectedSale] = useState<SaleUI | null>(null);
 
-  // detalle
   const [detailLoading, setDetailLoading] = useState(false);
-  const [detailError, setDetailError] = useState<string>("");
+  const [detailError, setDetailError] = useState("");
 
-  // eliminar
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [deleteError, setDeleteError] = useState<string>("");
+  const [deleteError, setDeleteError] = useState("");
 
-  // confirm modal
+  const [finalizingId, setFinalizingId] = useState<number | null>(null);
+  const [finalizeError, setFinalizeError] = useState("");
+
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saleToDelete, setSaleToDelete] = useState<SaleUI | null>(null);
 
-  // paginación
   const PAGE_SIZE = 20;
   const [page, setPage] = useState(1);
 
-  // Para descargar ticket como imagen (render oculto)
   const ticketRef = useRef<HTMLDivElement | null>(null);
   const [ticketSale, setTicketSale] = useState<TicketSaleUI | null>(null);
   const [ticketLoading, setTicketLoading] = useState(false);
 
-
   const loadSales = async () => {
-    
     try {
       setLoading(true);
       setError("");
 
-     console.log("ReportPage: loadSales start");
-        const res = await getSales();
-        console.log("ReportPage: getSales res", res);
-      if (!res.success) throw new Error(res.error || res.message || "No se pudieron cargar ventas");
+      const res = await getSales();
+      if (!res.success) {
+        throw new Error(res.error || res.message || "No se pudieron cargar ventas");
+      }
 
-      const mapped: SaleUI[] = (res.data || [])
-        .filter((s) => Number(s.status) === 1)
-        .map((s) => ({
-          id: s.id,
-          createdAt: new Date(String(s.date).replace(" ", "T") ),
-          cashierName: s.user || "—",
-          paymentMethod: mapPayMethod(s.pay_method),
-          total: Number(s.total || 0),
-          cashReceived: Number(s.cash_received || 0),
-          change: Number(s.change_returned || 0),
-        }));
+      const mapped: SaleUI[] = (res.data || []).map((s) => ({
+        id: s.id,
+        createdAt: new Date(String(s.date).replace(" ", "T")),
+        cashierName: s.user || "—",
+        paymentMethod: mapPayMethod(s.pay_method),
+        total: Number(s.total || 0),
+        status: Number(s.status || 0),
+        cashReceived: Number(s.cash_received || 0),
+        change: Number(s.change_returned || 0),
+      }));
 
       setSales(mapped);
     } catch (e) {
@@ -167,21 +160,28 @@ export default function ReportPage() {
 
   const filteredSales = useMemo(() => {
     const term = searchTerm.toLowerCase().trim();
+
     return sales.filter((sale) => {
       const matchesSearch =
         String(sale.id).includes(term) || sale.cashierName.toLowerCase().includes(term);
-      const matchesPayment = filterPayment === "all" ? true : sale.paymentMethod === filterPayment;
-      return matchesSearch && matchesPayment;
-    });
-  }, [sales, searchTerm, filterPayment]);
 
-  // ✅ ORDEN: más nueva -> más vieja (ID DESC)
+      const matchesPayment =
+        filterPayment === "all" ? true : sale.paymentMethod === filterPayment;
+
+      const matchesStatus =
+        filterStatus === "all" ? true : sale.status === filterStatus;
+
+      return matchesSearch && matchesPayment && matchesStatus;
+    });
+  }, [sales, searchTerm, filterPayment, filterStatus]);
+
   const sortedSales = useMemo(() => {
     return [...filteredSales].sort((a, b) => Number(b.id) - Number(a.id));
   }, [filteredSales]);
 
-  // reset page al cambiar filtros/busqueda
-  useEffect(() => setPage(1), [searchTerm, filterPayment]);
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filterPayment, filterStatus]);
 
   const totalPages = Math.max(1, Math.ceil(sortedSales.length / PAGE_SIZE));
 
@@ -198,13 +198,13 @@ export default function ReportPage() {
   }, [filteredSales]);
 
   const exportCsv = () => {
-    const header = ["id", "fecha", "cajero", "metodo", "total"];
-    // si quieres exportar también en orden DESC, cambia filteredSales por sortedSales
+    const header = ["id", "fecha", "cajero", "metodo", "estatus", "total"];
     const rows = sortedSales.map((s) => [
       s.id,
       s.createdAt.toISOString(),
       `"${(s.cashierName || "").replaceAll('"', '""')}"`,
       paymentLabels[s.paymentMethod],
+      getStatusLabel(s.status),
       s.total,
     ]);
 
@@ -220,7 +220,6 @@ export default function ReportPage() {
     URL.revokeObjectURL(url);
   };
 
-  // ✅ Cargar detalle (items) para el modal
   const openSaleDetail = async (sale: SaleUI) => {
     setSelectedSale(sale);
     setDetailLoading(true);
@@ -228,7 +227,9 @@ export default function ReportPage() {
 
     try {
       const res = await getSaleDetails(sale.id);
-      if (!res.success) throw new Error(res.error || res.message || "No se pudo cargar el detalle");
+      if (!res.success) {
+        throw new Error(res.error || res.message || "No se pudo cargar el detalle");
+      }
 
       const items: SaleItem[] = (res.data || []).map((it) => ({
         productName: it.description,
@@ -245,7 +246,6 @@ export default function ReportPage() {
     }
   };
 
-  // ✅ Confirmar eliminación
   const askDeleteSale = (sale: SaleUI) => {
     setSaleToDelete(sale);
     setConfirmOpen(true);
@@ -260,10 +260,29 @@ export default function ReportPage() {
       setDeletingId(id);
 
       const res = await deleteSale(id);
-      if (!res.success) throw new Error(res.error || res.message || "No se pudo eliminar la venta");
+      if (!res.success) {
+        throw new Error(res.error || res.message || "No se pudo eliminar la venta");
+      }
 
-      setSales((prev) => prev.filter((s) => s.id !== id));
-      setSelectedSale((prev) => (prev?.id === id ? null : prev));
+      setSales((prev) =>
+        prev.map((s) =>
+          s.id === id
+            ? {
+                ...s,
+                status: 0,
+              }
+            : s
+        )
+      );
+
+      setSelectedSale((prev) =>
+        prev?.id === id
+          ? {
+              ...prev,
+              status: 0,
+            }
+          : prev
+      );
 
       setConfirmOpen(false);
       setSaleToDelete(null);
@@ -274,23 +293,60 @@ export default function ReportPage() {
     }
   };
 
+  const handleFinalizeSale = async (sale: SaleUI) => {
+    try {
+      setFinalizeError("");
+      setFinalizingId(sale.id);
+
+      const res = await finalizeCreditSale(sale.id);
+      if (!res.success) {
+        throw new Error(res.error || res.message || "No se pudo finalizar la venta");
+      }
+
+      setSales((prev) =>
+        prev.map((s) =>
+          s.id === sale.id
+            ? {
+                ...s,
+                status: 1,
+              }
+            : s
+        )
+      );
+
+      setSelectedSale((prev) =>
+        prev?.id === sale.id
+          ? {
+              ...prev,
+              status: 1,
+            }
+          : prev
+      );
+    } catch (e) {
+      setFinalizeError(getErrorMessage(e, "Error finalizando venta"));
+    } finally {
+      setFinalizingId(null);
+    }
+  };
+
   const closeConfirm = () => {
     if (deletingId) return;
     setConfirmOpen(false);
     setSaleToDelete(null);
   };
 
-  // ✅ Descargar ticket como PNG
   const downloadTicketPng = async (sale: SaleUI) => {
     const { toPng } = await import("html-to-image");
+
     try {
       setTicketLoading(true);
 
-      // 1) Aseguramos items
       let items = sale.items;
       if (!items?.length) {
         const res = await getSaleDetails(sale.id);
-        if (!res.success) throw new Error(res.error || res.message || "No se pudo cargar el detalle");
+        if (!res.success) {
+          throw new Error(res.error || res.message || "No se pudo cargar el detalle");
+        }
 
         items = (res.data || []).map((it) => ({
           productName: it.description,
@@ -300,24 +356,25 @@ export default function ReportPage() {
         }));
       }
 
-      // 2) Render oculto para capturar
-      const forTicket: TicketSaleUI = {
-        id: sale.id,
-        createdAt: sale.createdAt,
-        cashierName: sale.cashierName,
-        paymentMethod: sale.paymentMethod,
-        total: sale.total,
-        cashReceived: sale.cashReceived,
-        change: sale.change,
-        items,
-      };
+    const forTicket: TicketSaleUI = {
+      id: sale.id,
+      createdAt: sale.createdAt,
+      cashierName: sale.cashierName,
+      paymentMethod: sale.paymentMethod,
+      total: sale.total,
+      status: sale.status,
+      cashReceived: sale.cashReceived ?? 0,
+      change: sale.change ?? 0,
+      items: items ?? [],
+    };
 
       setTicketSale(forTicket);
 
-      // Espera a que pinte el DOM
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
-      if (!ticketRef.current) throw new Error("No se pudo renderizar el ticket");
+      if (!ticketRef.current) {
+        throw new Error("No se pudo renderizar el ticket");
+      }
 
       const dataUrl = await toPng(ticketRef.current, {
         cacheBust: true,
@@ -337,13 +394,12 @@ export default function ReportPage() {
 
   return (
     <div className="p-4 lg:p-8">
-      {/* Confirm Modal */}
       <ConfirmModalAny
         open={confirmOpen}
-        title="Eliminar venta"
+        title="Cancelar / eliminar venta"
         description={
           saleToDelete
-            ? `¿Seguro que deseas eliminar/cancelar la venta #${String(saleToDelete.id).padStart(4, "0")}?`
+            ? `¿Seguro que deseas cancelar la venta #${String(saleToDelete.id).padStart(4, "0")}?`
             : "¿Seguro?"
         }
         confirmText={deletingId ? "Eliminando..." : "Sí, eliminar"}
@@ -353,16 +409,14 @@ export default function ReportPage() {
         onConfirm={confirmDeleteSale}
       />
 
-      {/* Ticket hidden render (para PNG) */}
       <div className="fixed -left-[9999px] top-0 opacity-0 pointer-events-none">
         <div ref={ticketRef}>{ticketSale ? <Ticket sale={ticketSale} /> : null}</div>
       </div>
 
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div className="min-w-0">
           <h1 className="text-2xl lg:text-3xl font-bold text-slate-900">Historial de Ventas</h1>
-          <p className="text-slate-500 mt-1">Consulta y exporta el registro de ventas</p>
+          <p className="text-slate-500 mt-1">Consulta, filtra y administra el registro de ventas</p>
         </div>
 
         <button
@@ -377,6 +431,12 @@ export default function ReportPage() {
       {deleteError && (
         <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700 text-sm">
           {deleteError}
+        </div>
+      )}
+
+      {finalizeError && (
+        <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-700 text-sm">
+          {finalizeError}
         </div>
       )}
 
@@ -396,7 +456,6 @@ export default function ReportPage() {
 
       {!loading && !error && (
         <>
-          {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
             <div className="rounded-2xl border border-slate-200 bg-white p-4">
               <p className="text-sm text-slate-500">Total Ventas</p>
@@ -414,239 +473,52 @@ export default function ReportPage() {
             </div>
           </div>
 
-          {/* Filters */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 mb-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1 min-w-0">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Buscar por ID o cajero..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 py-3 outline-none focus:border-emerald-400"
-                />
-              </div>
+          <ReportFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            filterPayment={filterPayment}
+            setFilterPayment={setFilterPayment}
+            filterStatus={filterStatus}
+            setFilterStatus={setFilterStatus}
+          />
 
-              <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:overflow-x-auto sm:pb-1">
-                <button
-                  onClick={() => setFilterPayment("all")}
-                  className={[
-                    "px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition",
-                    "shrink-0",
-                    filterPayment === "all"
-                      ? "bg-emerald-500 text-white"
-                      : "bg-slate-100 text-slate-700 hover:bg-slate-200",
-                  ].join(" ")}
-                >
-                  Todos
-                </button>
+          <SalesCards
+            sales={pagedSales}
+            deletingId={deletingId}
+            finalizingId={finalizingId}
+            ticketLoading={ticketLoading}
+            onViewDetail={openSaleDetail}
+            onDownloadTicket={downloadTicketPng}
+            onAskDelete={askDeleteSale}
+            onFinalizeSale={handleFinalizeSale}
+            formatCurrency={formatCurrency}
+            formatDateTime={formatDateTime}
+            getStatusLabel={getStatusLabel}
+            getStatusBadgeClass={getStatusBadgeClass}
+          />
 
-                {(Object.keys(paymentLabels) as PaymentMethod[]).map((key) => {
-                  const Icon = paymentIcons[key];
-                  const active = filterPayment === key;
+          <SalesTable
+            sales={pagedSales}
+            deletingId={deletingId}
+            finalizingId={finalizingId}
+            ticketLoading={ticketLoading}
+            onViewDetail={openSaleDetail}
+            onDownloadTicket={downloadTicketPng}
+            onAskDelete={askDeleteSale}
+            onFinalizeSale={handleFinalizeSale}
+            formatCurrency={formatCurrency}
+            formatDateTime={formatDateTime}
+            getStatusLabel={getStatusLabel}
+            getStatusBadgeClass={getStatusBadgeClass}
+          />
 
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => setFilterPayment(key)}
-                      className={[
-                        "px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition",
-                        "inline-flex items-center gap-2 shrink-0",
-                        active
-                          ? "bg-emerald-500 text-white"
-                          : "bg-slate-100 text-slate-700 hover:bg-slate-200",
-                      ].join(" ")}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {paymentLabels[key]}
-                    </button>
-                  );
-                })}
-              </div>
+          {sortedSales.length === 0 && (
+            <div className="hidden lg:block rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-500">
+              <ShoppingBag className="h-12 w-12 mx-auto mb-4 opacity-60" />
+              <p className="font-semibold text-slate-700">No hay ventas</p>
             </div>
-          </div>
+          )}
 
-          {/* TABLE */}
-         {/* LISTA (Mobile/iPad) */}
-<div className="lg:hidden space-y-3">
-  {pagedSales.map((sale) => {
-    const PaymentIcon = paymentIcons[sale.paymentMethod];
-    const isDeleting = deletingId === sale.id;
-
-    return (
-      <div
-        key={sale.id}
-        className="rounded-2xl border border-slate-200 bg-white p-4"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="font-bold text-slate-900">
-              Venta #{String(sale.id).padStart(4, "0")}
-            </p>
-            <p className="text-sm text-slate-500">{formatDateTime(sale.createdAt)}</p>
-            <p className="text-sm text-slate-700 truncate">{sale.cashierName}</p>
-          </div>
-
-          <div className="text-right shrink-0">
-            <p className="font-bold text-slate-900">{formatCurrency(sale.total)}</p>
-            <div className="mt-1 inline-flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-1 text-sm text-slate-700">
-              <PaymentIcon className="h-4 w-4 text-slate-500" />
-              <span>{paymentLabels[sale.paymentMethod]}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Acciones táctiles */}
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          <button
-            onClick={() => openSaleDetail(sale)}
-            className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 inline-flex items-center justify-center gap-2"
-          >
-            <Eye className="h-4 w-4" />
-            Ver
-          </button>
-
-          <button
-            onClick={() => downloadTicketPng(sale)}
-            disabled={ticketLoading}
-            className={[
-              "rounded-xl px-3 py-2 text-sm font-semibold inline-flex items-center justify-center gap-2",
-              ticketLoading
-                ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                : "bg-slate-900 hover:bg-slate-800 text-white",
-            ].join(" ")}
-          >
-            {ticketLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ReceiptText className="h-4 w-4" />}
-            Ticket
-          </button>
-
-          <button
-            onClick={() => askDeleteSale(sale)}
-            disabled={isDeleting}
-            className={[
-              "rounded-xl px-3 py-2 text-sm font-semibold inline-flex items-center justify-center gap-2",
-              isDeleting
-                ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                : "bg-rose-500 hover:bg-rose-600 text-white",
-            ].join(" ")}
-          >
-            {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-            Eliminar
-          </button>
-        </div>
-      </div>
-    );
-  })}
-
-  {sortedSales.length === 0 && (
-    <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-500">
-      <ShoppingBag className="h-12 w-12 mx-auto mb-4 opacity-60" />
-      <p className="font-semibold text-slate-700">No hay ventas</p>
-    </div>
-  )}
-</div>
-
-{/* TABLE (Desktop) */}
-<div className="hidden lg:block rounded-2xl border border-slate-200 bg-white overflow-hidden">
-  <div className="overflow-x-auto">
-    <table className="w-full min-w-[900px]">
-      <thead>
-        <tr className="bg-slate-50 border-b border-slate-200">
-          <th className="text-left p-4 text-sm font-semibold text-slate-700">ID</th>
-          <th className="text-left p-4 text-sm font-semibold text-slate-700">Fecha y Hora</th>
-          <th className="text-left p-4 text-sm font-semibold text-slate-700">Cajero</th>
-          <th className="text-center p-4 text-sm font-semibold text-slate-700">Método</th>
-          <th className="text-right p-4 text-sm font-semibold text-slate-700">Total</th>
-          <th className="text-center p-4 text-sm font-semibold text-slate-700">Acciones</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {pagedSales.map((sale) => {
-          const PaymentIcon = paymentIcons[sale.paymentMethod];
-          const isDeleting = deletingId === sale.id;
-
-          return (
-            <tr key={sale.id} className="border-b border-slate-100 hover:bg-slate-50/60">
-              <td className="p-4 font-semibold text-slate-900">
-                #{String(sale.id).padStart(4, "0")}
-              </td>
-              <td className="p-4 text-slate-500">{formatDateTime(sale.createdAt)}</td>
-              <td className="p-4 text-slate-900">{sale.cashierName}</td>
-              <td className="p-4">
-                <div className="flex items-center justify-center gap-2 text-slate-700">
-                  <PaymentIcon className="h-4 w-4 text-slate-500" />
-                  <span className="text-sm">{paymentLabels[sale.paymentMethod]}</span>
-                </div>
-              </td>
-              <td className="p-4 text-right font-bold text-slate-900">
-                {formatCurrency(sale.total)}
-              </td>
-
-              <td className="p-4">
-                <div className="flex items-center justify-center gap-2">
-                  <button
-                    onClick={() => openSaleDetail(sale)}
-                    className="h-9 w-9 rounded-lg bg-slate-100 hover:bg-slate-200 grid place-items-center transition"
-                    title="Ver detalle"
-                  >
-                    <Eye className="h-4 w-4 text-slate-700" />
-                  </button>
-
-                  <button
-                    onClick={() => downloadTicketPng(sale)}
-                    disabled={ticketLoading}
-                    className={[
-                      "h-9 w-9 rounded-lg grid place-items-center transition",
-                      ticketLoading
-                        ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                        : "bg-slate-900 hover:bg-slate-800 text-white",
-                    ].join(" ")}
-                    title="Descargar ticket (PNG)"
-                  >
-                    {ticketLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <ReceiptText className="h-4 w-4" />
-                    )}
-                  </button>
-
-                  <button
-                    onClick={() => askDeleteSale(sale)}
-                    disabled={isDeleting}
-                    className={[
-                      "h-9 w-9 rounded-lg grid place-items-center transition",
-                      isDeleting
-                        ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                        : "bg-rose-500 hover:bg-rose-600 text-white",
-                    ].join(" ")}
-                    title="Eliminar"
-                  >
-                    {isDeleting ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  </div>
-
-  {sortedSales.length === 0 && (
-    <div className="p-12 text-center text-slate-500">
-      <ShoppingBag className="h-12 w-12 mx-auto mb-4 opacity-60" />
-      <p className="font-semibold text-slate-700">No hay ventas</p>
-    </div>
-  )}
-</div>
-
-          {/* PAGINACIÓN */}
           {sortedSales.length > PAGE_SIZE && (
             <div className="mt-6 flex items-center justify-between gap-3">
               <p className="text-sm text-slate-500">
@@ -684,7 +556,6 @@ export default function ReportPage() {
             </div>
           )}
 
-          {/* MODAL Detalle */}
           {selectedSale && (
             <div className="fixed inset-0 z-40">
               <div className="absolute inset-0 bg-black/50" onClick={() => setSelectedSale(null)} />
@@ -731,7 +602,18 @@ export default function ReportPage() {
                       </span>
                     </div>
 
-                    {/* Productos */}
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Estatus</span>
+                      <span
+                        className={[
+                          "inline-flex rounded-full px-3 py-1 text-xs font-bold",
+                          getStatusBadgeClass(selectedSale.status),
+                        ].join(" ")}
+                      >
+                        {getStatusLabel(selectedSale.status)}
+                      </span>
+                    </div>
+
                     <div className="border-t border-slate-200 pt-4">
                       <div className="flex items-center justify-between mb-3">
                         <p className="font-semibold text-slate-900">Productos</p>
@@ -766,7 +648,9 @@ export default function ReportPage() {
                     <div className="border-t border-slate-200 pt-4 space-y-2">
                       <div className="flex justify-between text-base pt-2">
                         <span className="font-bold text-slate-900">Total</span>
-                        <span className="font-bold text-emerald-600">{formatCurrency(selectedSale.total)}</span>
+                        <span className="font-bold text-emerald-600">
+                          {formatCurrency(selectedSale.total)}
+                        </span>
                       </div>
                     </div>
 

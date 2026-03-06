@@ -22,7 +22,7 @@ export type PrivilegesUserInfo = {
   name: string;
   paternal_lastname: string;
   maternal_lastname: string;
-  role: string; // "Administrador" | "Cajero" (si quieres tiparlo más estricto)
+  role: string; 
   status: number;
 };
 
@@ -33,7 +33,6 @@ export type ApiResponse<T> = {
   error?: string;
 };
 
-// ✅ GET /api/privileges  -> lista de permisos (catálogo)
 export type GetAllPrivilegesResponse = ApiResponse<Privilege[]>;
 
 export async function getAllPrivileges() {
@@ -41,7 +40,7 @@ export async function getAllPrivileges() {
   return data;
 }
 
-// ✅ GET /api/privileges/:userId -> { user, permissions }
+
 export type GetPrivilegesByUserIdData = {
   user: PrivilegesUserInfo;
   permissions: Privilege[];
@@ -54,13 +53,13 @@ export async function getPrivilegesByUserId(userId: number) {
   return data;
 }
 
-// ✅ Alias opcional (por si un día cambias el nombre en imports sin querer)
+
 export const getPrivilegesByUserID = getPrivilegesByUserId;
 
-// ✅ POST asignar permiso a usuario
+
 export type AssignPrivilegePayload = {
   user_id: number;
-  permission: number; // permission id
+  permission: number; 
 };
 
 export type AssignPrivilegeResponse = ApiResponse<null>;
@@ -70,16 +69,16 @@ export async function assignPrivilege(payload: AssignPrivilegePayload) {
   return data;
 }
 
-// ✅ DELETE quitar permiso a usuario
+
 export type RemovePrivilegePayload = {
   user_id: number;
-  permission: number; // permission id
+  permission: number;
 };
 
 export type RemovePrivilegeResponse = ApiResponse<null>;
 
 export async function removePrivilege(payload: RemovePrivilegePayload) {
-  // Axios delete con body => va en { data: payload }
+  
   const { data } = await http.delete<RemovePrivilegeResponse>("/privileges", { data: payload });
   return data;
 }

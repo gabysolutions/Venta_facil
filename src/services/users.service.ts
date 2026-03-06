@@ -10,31 +10,24 @@ export type ApiResponse<T> = {
   error?: string;
 };
 
-// =======================
-// TYPES
-// =======================
-
-// Base (para listados / tablas) -> NO incluye user/password
 export type User = {
   id: number;
   name: string;
   paternal_lastname: string;
   maternal_lastname: string;
   role: UserRole;
-  status: number; // 1 activo, 0 inactivo
+  status: number; 
 };
 
 export type UserRow = User;
 
-// Detail (GET by id) -> incluye user/password (según tu endpoint)
+
 export type UserDetail = User & {
   user: string;
   password: string;
 };
 
-// =======================
-// GET ALL
-// =======================
+
 export type GetUsersResponse = ApiResponse<User[]>;
 
 export async function getAllUsers() {
@@ -46,9 +39,7 @@ export async function getUsers() {
   return getAllUsers();
 }
 
-// =======================
-// GET BY ID
-// =======================
+
 export type GetUserByIdResponse = ApiResponse<UserDetail>;
 
 export async function getUserById(id: number) {
@@ -56,9 +47,7 @@ export async function getUserById(id: number) {
   return data;
 }
 
-// =======================
-// CREATE
-// =======================
+
 export type CreateUserPayload = {
   name: string;
   paternal_lastname: string;
@@ -75,9 +64,7 @@ export async function createUser(payload: CreateUserPayload) {
   return data;
 }
 
-// =======================
-// UPDATE
-// =======================
+
 export type UpdateUserPayload = {
   id: number;
   name: string;
@@ -95,9 +82,7 @@ export async function updateUser(payload: UpdateUserPayload) {
   return data;
 }
 
-// =======================
-// DELETE
-// =======================
+
 export type DeleteUserResponse = ApiResponse<null>;
 
 export async function deleteUser(id: number) {
@@ -105,9 +90,7 @@ export async function deleteUser(id: number) {
   return data;
 }
 
-// =======================
-// ACTIVATE
-// =======================
+
 export type ActivateUserResponse = ApiResponse<null>;
 
 export async function activateUser(id: number) {
