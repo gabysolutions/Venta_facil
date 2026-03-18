@@ -54,7 +54,7 @@ export default function CashoutPage() {
   );
 
   const expectedTotal = useMemo(() => {
-    return expected.openingFloat + expected.cashSales - expected.expenses - expected.refunds;
+    return expected.openingFloat + expected.cashSales - expected.expenses ;
   }, [expected]);
 
   const diff = useMemo(() => countedValue - expectedTotal, [countedValue, expectedTotal]);
