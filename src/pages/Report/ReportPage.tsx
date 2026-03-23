@@ -207,7 +207,9 @@ export default function ReportPage() {
   }, [sortedSales, page]);
 
   const stats = useMemo(() => {
-    const total = filteredSales.reduce((sum, s) => sum + s.total, 0);
+     const activeSales = filteredSales.filter(s => s.status === 1);
+
+    const total = activeSales.reduce((sum, s) => sum + s.total, 0);
     const count = filteredSales.length;
     const average = count > 0 ? total / count : 0;
     return { total, count, average };
