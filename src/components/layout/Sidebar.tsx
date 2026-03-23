@@ -10,7 +10,7 @@ import {
   BanknoteArrowUp,
   Settings,
   LogOut,
-  ChevronDown,
+  ChevronDown,FileChartColumn,
 } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
@@ -25,11 +25,14 @@ type NavItem = {
   requiredPerm?: Permission;
 };
 
+
+
 const navItems: NavItem[] = [
   { label: "Dashboard", to: "/dashboard", icon: <LayoutGrid size={18} />, section: "main" },
   { label: "Productos", to: "/productos", icon: <Package size={18} />, section: "main", requiredPerm: "ADMINISTRAR_PRODUCTOS" },
   { label: "Inventario", to: "/inventario", icon: <Boxes size={18} />, section: "main", requiredPerm: "ADMINISTRAR_INVENTARIO" },
   { label: "Reportes", to: "/reportes", icon: <BarChart3 size={18} />, section: "main", requiredPerm: "VER_REPORTES" },
+  { label: "Historial Cortes", to: "/historial-cortes", icon: <FileChartColumn size={18} />, section: "main", requiredPerm: "HISTORIAL_CORTES" },
   { label: "Corte de Caja", to: "/corte-caja", icon: <Calculator size={18} />, section: "main", requiredPerm: "VISTA_CORTE" },
   { label: "Egresos", to: "/egresos", icon: <BanknoteArrowUp size={18} />, section: "main", requiredPerm: "ACCESO_EGRESOS" },
   { label: "Configuración", to: "/configuracion", icon: <Settings size={18} />, section: "system", requiredPerm: "ACCESO_CONFIGURACION" },

@@ -13,6 +13,7 @@ import CreditSalesPage from "../pages/Sales/SalesCreditPage";
 import ProductsPage from "../pages/Products/ProductsPage";
 import InventoryPage from "../pages/Inventory/Inventory";
 import ReportPage from "../pages/Report/ReportPage";
+import HistoryPage from "../pages/Historybalance/HistoryPage";
 import CashoutPage from "../pages/Cashout/CashoutPage";
 import OpenCashoutPage from "../pages/Cashout/OpenCashoutPage";
 import ExpensesPage from "../pages/Expenses/ExpensesPage";
@@ -65,6 +66,11 @@ export default function AppRouter() {
             {/* Reportes */}
             <Route element={<ProtectedRoute requiredPermission="VER_REPORTES" />}>
               <Route path="/reportes" element={<ReportPage />} />
+            </Route>
+
+               {/* Historial cortes */}
+            <Route element={<ProtectedRoute requiredPermission="HISTORIAL_CORTES" />}>
+              <Route path="/historial-cortes" element={<HistoryPage />} />
             </Route>
 
             {/* Corte de caja */}

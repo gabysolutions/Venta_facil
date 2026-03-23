@@ -3,7 +3,7 @@ import { http } from "./http";
 export type PrivilegeKey =
   | "VISTA_CORTE"
   | "ABRIR_CAJA"
-
+  | "HISTORIAL_CORTES"
   | "CERRAR_CAJA"
   | "ACCESO_EGRESOS"
   | "ADMINISTRAR_PRODUCTOS"
