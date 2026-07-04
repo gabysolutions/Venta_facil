@@ -17,6 +17,7 @@ export type ProfitResponse = {
   data: {
     day_amount: number;
     month_amount: number;
+    month_expenses:number;
   };
   message?: string;
   error?: string;

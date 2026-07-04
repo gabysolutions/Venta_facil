@@ -14,7 +14,7 @@ export default defineConfig({
     }),
   ],
 
-  // ✅ CLAVE: que el bundle "moderno" no use sintaxis nueva
+
   esbuild: {
     target: "es2015",
   },

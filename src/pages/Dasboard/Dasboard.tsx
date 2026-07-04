@@ -8,6 +8,7 @@ import {
   ArrowRight,
   Package,
   Wallet,
+  BanknoteX,
 } from "lucide-react";
 import Loader from "../../components/ui/Loader";
 import {
@@ -51,6 +52,7 @@ export default function Dashboard() {
   const [profitInfo, setProfitInfo] = useState({
     day_amount: 0,
     month_amount: 0,
+    month_expenses:0,
   });
 
   const [balance, setBalance] = useState<null | {
@@ -161,7 +163,7 @@ export default function Dashboard() {
           </Link>
 
       {/* Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 lg:mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-3 mb-5 lg:mb-7">
         <MetricCard
           title="Utilidad de Hoy"
           value={formatCurrency(profitInfo.day_amount)}
@@ -196,6 +198,16 @@ export default function Dashboard() {
           iconWrap="bg-slate-100"
           badge="Mes"
           badgeClass="bg-slate-100 text-slate-700"
+        />
+
+         <MetricCard
+          title="Egresos del mes"
+          value={formatCurrency(profitInfo.month_expenses)}
+          subtitle={` Gastos del mes`}
+          icon={<BanknoteX className="h-5 w-5 text-red-700" />}
+          iconWrap="bg-red-100"
+          badge="Mes"
+          badgeClass="bg-red-100 text-red-700"
         />
       </div>
 
