@@ -163,7 +163,7 @@ export default function Dashboard() {
           </Link>
 
       {/* Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-3 mb-5 lg:mb-7">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-5 lg:mb-7">
         <MetricCard
           title="Utilidad de Hoy"
           value={formatCurrency(profitInfo.day_amount)}
@@ -376,26 +376,29 @@ function MetricCard({
   iconWrap?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className={`h-10 w-10 rounded-xl ${iconWrap} grid place-items-center flex-shrink-0`}>
-            {icon}
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-bold text-slate-700 truncate">{title}</p>
-            <p className="text-2xl font-extrabold text-slate-900 truncate">{value}</p>
-          </div>
+    <div className="rounded-2xl border border-slate-200 bg-white p-3 sm:p-4 min-w-0">
+    
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <div className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl ${iconWrap} grid place-items-center flex-shrink-0`}>
+          {icon}
         </div>
 
         {badge && (
-          <span className={`px-3 py-1 rounded-full text-xs font-extrabold flex-shrink-0 ${badgeClass}`}>
+          <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-extrabold flex-shrink-0 ${badgeClass}`}>
             {badge}
           </span>
         )}
       </div>
 
-      <p className="text-sm text-slate-500 mt-2">{subtitle}</p>
+      <p className="text-xs sm:text-sm font-bold text-slate-700 leading-tight break-words">
+        {title}
+      </p>
+      <p className="text-lg sm:text-2xl font-extrabold text-slate-900 truncate mt-0.5">
+        {value}
+      </p>
+      <p className="text-xs sm:text-sm text-slate-500 mt-1 truncate">
+        {subtitle}
+      </p>
     </div>
   );
 }
